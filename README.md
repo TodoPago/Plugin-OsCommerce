@@ -1,6 +1,6 @@
 <a name="inicio"></a>
 Oscommerce - módulo Todo Pago (v2.3.x)
-============
+============ 
 Plug in para la integración con gateway de pago <strong>Todo Pago</strong>
 - [Consideraciones Generales](#consideracionesgenerales)
 - [Instalación](#instalacion)
