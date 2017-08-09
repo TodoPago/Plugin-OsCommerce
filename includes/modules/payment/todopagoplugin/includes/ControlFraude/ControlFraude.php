@@ -46,10 +46,10 @@ abstract class ControlFraude{
         
 		$this->logger->debug(" CSBTFIRSTNAME - nombre de usuario el que se le emite la factura");
 		$payDataOperacion ['CSBTFIRSTNAME'] = $this->getField($this->order->customer['firstname']);
-        
+		
 		$this->logger->debug(" CSBTLASTNAME - Apellido del usuario al que se le emite la factura");
 		$payDataOperacion ['CSBTLASTNAME'] = $this->getField($this->order->customer['lastname']);
-        
+		
 		$this->logger->debug(" CSBTPOSTALCODE - Código Postal de la dirección de facturación");
 		$payDataOperacion ['CSBTPOSTALCODE'] = $this->getField($this->order->customer['postcode']);
         

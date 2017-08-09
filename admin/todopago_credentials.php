@@ -3,10 +3,10 @@ require('includes/application_top.php');
 require_once dirname(__FILE__).'/../includes/modules/payment/todopagoplugin/includes/vendor/autoload.php';
 
 
-$mail = filter_var( $_POST['mail'], FILTER_SANITIZE_EMAIL);
-$pass = filter_var( $_POST['pass'], FILTER_SANITIZE_STRING); 
-
-// instancio User 
+$mail = filter_var( $_POST['mail'], FILTER_SANITIZE_EMAIL );
+$pass = filter_var( $_POST['pass'], FILTER_SANITIZE_STRING);
+$amb  = filter_var( $_POST['amb'] , FILTER_SANITIZE_STRING);
+// instancio User
 use TodoPago\Data\User as User;
 $user = new User($mail, $pass);
 
@@ -18,7 +18,7 @@ $res = tep_db_query($sql);
 $config = tep_db_fetch_array($res);
 
 use TodoPago\Sdk as Sdk;
-$Sdk = new Sdk(array(), ($config["ambiente"] == 'test') ? 'test' : 'prod');
+$Sdk = new Sdk(array(), ($amb == 'test') ? 'test' : 'prod');
 
 try {
 	$credentials = $Sdk->getCredentials($user);

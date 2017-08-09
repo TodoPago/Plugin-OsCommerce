@@ -10,11 +10,13 @@ set_include_path(get_include_path() . PATH_SEPARATOR . realpath(dirname(__FILE__
 require_once dirname(__FILE__).'/todopagoplugin/includes/todopago_ctes.php';
 //require_once dirname(__FILE__).'/todopagoplugin/includes/TodoPagoLogger.php';
 require_once dirname(__FILE__).'/todopagoplugin/includes/Logger/loggerFactory.php';
-require_once dirname(__FILE__).'/todopagoplugin/includes/TodoPago/lib/Sdk.php';
+//require_once dirname(__FILE__).'/todopagoplugin/includes/TodoPago/lib/Sdk.php';
+require_once dirname(__FILE__).'/todopagoplugin/includes/vendor/autoload.php';
 include_once dirname(__FILE__).'/todopagoplugin/includes/phone.php';
 
 require_once dirname(__FILE__).'/todopagoplugin/includes/ControlFraude/includes.php';
 include_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'todopagoplugin'.DIRECTORY_SEPARATOR.'includes'.DIRECTORY_SEPARATOR.'TodopagoTransaccion.php');
+include_once dirname(__FILE__).'/todopagoplugin/includes/Utilidades/StatusCodeCS.php';
 
 class todopagoplugin {
 
@@ -93,7 +95,7 @@ class todopagoplugin {
             if ($firstState){
                 echo '<option value="'.$code.'" selected>'.$city.'</option>';
                 $stateCode = $code;
-				$firstState = false;
+                $firstState = false;
             }
             else {
                 echo '<option value="'.$code.'">'.$city.'</option>';
@@ -102,7 +104,7 @@ class todopagoplugin {
 
 
         echo "</select>";
-        
+
         return false;
     }
 
@@ -139,7 +141,7 @@ class todopagoplugin {
 
 
 
-        if ($my_currency == 'USD'){ 
+        if ($my_currency == 'USD'){
 
             $TipoMoneda = 'DOL';}else{
 
@@ -163,7 +165,7 @@ class todopagoplugin {
 
             tep_draw_hidden_field('url_process', '') .
 
-            tep_draw_hidden_field('url_succesfull', tep_href_link(FILENAME_CHECKOUT_PROCESS, '', 'SSL')) . 
+            tep_draw_hidden_field('url_succesfull', tep_href_link(FILENAME_CHECKOUT_PROCESS, '', 'SSL')) .
 
             tep_draw_hidden_field('enc', MODULE_PAYMENT_TODOPAGOPLUGIN_CODE);
 
@@ -172,7 +174,7 @@ class todopagoplugin {
 
     function before_process() {
 
-        
+
     }
 
     function checkout_initialization_method() {
@@ -184,7 +186,7 @@ class todopagoplugin {
 
     function after_process() {
         $dir = DIR_WS_INCLUDES.'work'.DIRECTORY_SEPARATOR.'todopago.log';
-        
+
         $this->first_step_todopago();
 
         return false;
@@ -227,8 +229,38 @@ class todopagoplugin {
 
         tep_db_query("CREATE TABLE IF NOT EXISTS `".TABLE_TP_ATRIBUTOS."` ( `product_id` BIGINT NOT NULL , `CSITPRODUCTCODE` VARCHAR(150) NOT NULL COMMENT 'Codigo del producto' , `CSMDD33` VARCHAR(150) NOT NULL COMMENT 'Dias para el evento' , `CSMDD34` VARCHAR(150) NOT NULL COMMENT 'Tipo de envio' , `CSMDD28` VARCHAR(150) NOT NULL COMMENT 'Tipo de servicio' , `CSMDD31` VARCHAR(150) NOT NULL COMMENT 'Tipo de delivery' ) ENGINE = MyISAM;");
 
-        tep_db_query("CREATE TABLE IF NOT EXISTS `".TABLE_TP_CONFIGURACION."` ( `idConf` INT NOT NULL PRIMARY KEY, `authorization` VARCHAR(100) NOT NULL , `segmento` VARCHAR(100) NOT NULL , `canal` VARCHAR(100) NOT NULL , `ambiente` VARCHAR(100) NOT NULL , `deadline` VARCHAR(100) NOT NULL , `test_endpoint` TEXT NOT NULL , `test_wsdl` TEXT NOT NULL , `test_merchant` VARCHAR(100) NOT NULL , `test_security` VARCHAR(100) NOT NULL , `production_endpoint` TEXT NOT NULL , `production_wsdl` TEXT NOT NULL , `production_merchant` VARCHAR(100) NOT NULL , `production_security` VARCHAR(100) NOT NULL , `estado_inicio` VARCHAR(100) NOT NULL , `estado_aprobada` VARCHAR(100) NOT NULL , `estado_rechazada` VARCHAR(100) NOT NULL , `tipo_formulario` TINYINT UNSIGNED DEFAULT 0,`estado_offline` VARCHAR(100) NOT NULL, `medios_pago` TEXT NOT NULL ) ENGINE = MyISAM;");
+        tep_db_query("CREATE TABLE IF NOT EXISTS `".TABLE_TP_CONFIGURACION."` ( `idConf` INT NOT NULL PRIMARY KEY, `authorization` VARCHAR(100) NOT NULL , `segmento` VARCHAR(100) NOT NULL , `canal` VARCHAR(100) NOT NULL , `ambiente` VARCHAR(100) NOT NULL , `deadline` VARCHAR(100) NOT NULL , `test_endpoint` TEXT NOT NULL , `test_wsdl` TEXT NOT NULL , `test_merchant` VARCHAR(100) NOT NULL , `test_security` VARCHAR(100) NOT NULL , `production_endpoint` TEXT NOT NULL , `production_wsdl` TEXT NOT NULL , `production_merchant` VARCHAR(100) NOT NULL , `production_security` VARCHAR(100) NOT NULL , `estado_inicio` VARCHAR(100) NOT NULL , `estado_aprobada` VARCHAR(100) NOT NULL , `estado_rechazada` VARCHAR(100) NOT NULL , `tipo_formulario` TINYINT UNSIGNED DEFAULT 0,`estado_offline` VARCHAR(100) NOT NULL, `medios_pago` TEXT NOT NULL,`todopago_timeout` INT ,`timeout_enabled` TINYINT UNSIGNED DEFAULT 0 , `emptycart_enabled` TINYINT UNSIGNED DEFAULT 0 , `maxinstallments` INT UNSIGNED DEFAULT 12 , `maxinstallments_enabled` TINYINT UNSIGNED DEFAULT 0  ) ENGINE = MyISAM;");
 
+        $qryMaxinstallments = "SHOW COLUMNS FROM `".TABLE_TP_CONFIGURACION."` LIKE 'maxinstallments'";
+        $resFields = tep_db_query($qryMaxinstallments);
+        if ( $resFields->num_rows == 0 ){ // debo crearlo
+
+            tep_db_query("ALTER TABLE `".TABLE_TP_CONFIGURACION."` ADD `maxinstallments` INT(2) NOT NULL DEFAULT '12' ");
+        }
+
+        $qry = "SHOW COLUMNS FROM `".TABLE_TP_CONFIGURACION."` LIKE 'todopago_timeout'";
+        $resFields = tep_db_query($qry);
+        if ( $resFields->num_rows == 0 ){ // debo crearlo
+
+            tep_db_query("ALTER TABLE `".TABLE_TP_CONFIGURACION."` ADD `todopago_timeout` INT(11) NOT NULL DEFAULT '0' ");
+        }
+
+        $qryTimeout_enabled = "SHOW COLUMNS FROM `".TABLE_TP_CONFIGURACION."` LIKE 'timeout_enabled'";
+        $resFields = tep_db_query($qryTimeout_enabled);
+        if ( $resFields->num_rows == 0 ){ // debo crearlo
+
+            tep_db_query("ALTER TABLE `".TABLE_TP_CONFIGURACION."` ADD `timeout_enabled` INT(1) NOT NULL DEFAULT '0' ");
+        }
+        $qryTimeout_enabled = "SHOW COLUMNS FROM `".TABLE_TP_CONFIGURACION."` LIKE 'timeout_enabled'";
+        $resFields = tep_db_query($qryTimeout_enabled);
+        if ( $resFields->num_rows == 0 ){ // debo crearlo
+
+        $qryEmptycart_enabled = "SHOW COLUMNS FROM `".TABLE_TP_CONFIGURACION."` LIKE 'emptycart_enabled'";
+        $resFields = tep_db_query($qryEmptycart_enabled);
+	}
+        if ( $resFields->num_rows == 0 ){ // debo crearlo
+            tep_db_query("ALTER TABLE `".TABLE_TP_CONFIGURACION."` ADD `emptycart_enabled` INT(1) NOT NULL DEFAULT '0' ");
+        }
         tep_db_query("DELETE FROM `".TABLE_TP_CONFIGURACION."`");
 
         tep_db_query("INSERT INTO `".TABLE_TP_CONFIGURACION."` (`idConf`, `authorization`, `segmento`, `canal`, `ambiente`, `deadline`, `test_endpoint`, `test_wsdl`, `test_merchant`, `test_security`, `production_endpoint`, `production_wsdl`, `production_merchant`, `production_security`, `estado_inicio`, `estado_aprobada`, `estado_rechazada`, `estado_offline`, `medios_pago`) VALUES ('1', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '')");
@@ -315,7 +347,13 @@ class todopagoplugin {
                     'rechazada' => $todoPagoConfig['estado_rechazada'],
                     'offline' => $todoPagoConfig['estado_offline']
                     ),
-                'medios_pago' => $todoPagoConfig['medios_pago']
+                'medios_pago' => $todoPagoConfig['medios_pago'],
+                'maxinstallments' => $todoPagoConfig['maxinstallments'],
+                'maxinstallments_enabled' => $todoPagoConfig['maxinstallments_enabled'],
+                'timeout_enabled' => $todoPagoConfig['timeout_enabled'],
+                'emptycart_enabled' => $todoPagoConfig['emptycart_enabled'],
+                'todopago_timeout' => $todoPagoConfig['todopago_timeout']
+
                  );
     }
 
@@ -330,7 +368,7 @@ class todopagoplugin {
         return $connector;
     }
 
-    
+
 
     private function _get_digital_goods_fields(){
 
@@ -352,11 +390,11 @@ class todopagoplugin {
             }
         }
 
-        $fields = array(		
+        $fields = array(
             'CSMDD31'=>implode('#',$CSMDD31)
         );
 
-        return $fields;	    
+        return $fields;
     }
 
     private function _get_services_fields(){
@@ -379,11 +417,11 @@ class todopagoplugin {
             }
         }
 
-        $fields = array(		
+        $fields = array(
             'CSMDD28'=>implode('#',$CSMDD28)
         );
 
-        return $fields;	    
+        return $fields;
     }
 
     private function _get_ticketing_fields(){
@@ -410,12 +448,12 @@ class todopagoplugin {
             }
         }
 
-        $fields = array(		
+        $fields = array(
             'CSMDD33'=>implode('#',$CSMDD33),
             'CSMDD34'=>implode('#',$CSMDD34)
         );
 
-        return $fields;	  
+        return $fields;
 
     }
 
@@ -432,7 +470,7 @@ class todopagoplugin {
         $todoPagoConfig = tep_db_query('SELECT * FROM '.TABLE_TP_ATRIBUTOS.' WHERE product_id = '.$product_id[0]);
         $todoPagoConfig = tep_db_fetch_array($todoPagoConfig);
 
-        return $todoPagoConfig; 
+        return $todoPagoConfig;
     }
 
     private function _get_tp_states(){
@@ -477,7 +515,7 @@ class todopagoplugin {
 
                         'Santa Cruz'  => 'Z',
 
-                        'Santa F&eacute;' =>  	'S',
+                        'Santa F&eacute;' =>    'S',
 
                         'Santiago del Estero'  => 'G',
 
@@ -485,13 +523,13 @@ class todopagoplugin {
 
                         'Tucum&aacute;n'  => 'T');
 
-        return $states;    
+        return $states;
     }
 
     private function _cleanId($id){
         return substr($id, 0,  strpos($id.'{', '{'));
     }
-    
+
     private function _get_customer_aditional_info($customer_id){
         $query = tep_db_query("SELECT c.customers_id as 'customer_id', c.customers_password as 'password', ci.customers_info_date_account_created as 'date_creation', COUNT(*) AS 'orders_qty' FROM customers c INNER JOIN customers_info ci ON c.customers_id = ci.customers_info_id INNER JOIN orders o ON ci.customers_info_id = o.customers_id WHERE c.customers_id = ".$customer_id);
         return tep_db_fetch_array($query);
@@ -545,10 +583,11 @@ class todopagoplugin {
             $this->logger->debug("Reintento");
             $rta = $connector->sendAuthorizeRequest($optionsSAR[0], $optionsSAR[1]);
         }
+
         $this->logger->info("response SAR: ".json_encode($rta));
+
         if ($rta['StatusCode'] == TP_STATUS_OK) {
             $query = $this->todopagoTransaccion->recordFirstStep($order->id, $optionsSAR, $rta);
-            $this->logger->info("query recordFirstStep: ".$query);
 
             //select payment form
             $todoPagoConfig = tep_db_query('SELECT * FROM todo_pago_configuracion');
@@ -564,7 +603,10 @@ class todopagoplugin {
             die();
 
         } else {
-            header('Location: '.tep_href_link('checkout_shipping_retry.php', '', 'SSL'));
+	    if($rta['StatusCode'] > 98000 && $rta['StatusCode'] < 99000)
+	            header('Location: '.tep_href_link('checkout_shipping_retry.php', 'msg='.urlencode($rta["StatusMessage"]), 'SSL'));
+	    else
+	            header('Location: '.tep_href_link('checkout_shipping_retry.php', '', 'SSL'));
             die();
         }
     }
@@ -614,13 +656,11 @@ class todopagoplugin {
     private function getOptionsSAROperacion($order){
 
         global $customer_id;
-        
         $merchant = $this->todoPagoConfig['merchant'];
-        
         $order->delivery['tp_state'] = $this->tp_states;
         $order->billing['tp_state'] = $this->tp_states;
         $order->customer_aditional_info = $this->_get_customer_aditional_info($customer_id);
-        
+
         $controlFraude = ControlFraudeFactory::get_ControlFraude_extractor($this->todoPagoConfig['segmento'], $order, $this->logger);
         $optionsSAR_operacion = $controlFraude->getDataCF();
 
@@ -628,10 +668,18 @@ class todopagoplugin {
         $optionsSAR_operacion['CURRENCYCODE'] = '032';
         $optionsSAR_operacion['OPERATIONID'] = $order->id;
         $optionsSAR_operacion['AMOUNT'] = $order->info['total'];
-//
+
+        if( isset($this->todoPagoConfig['']) && $this->todoPagoConfig[''] == 1  ){
+          $optionsSAR_operacion['MAXINSTALLMENTS'] = ($this->todoPagoConfig['maxinstallments'] > 0 && $this->todoPagoConfig['maxinstallments'] <= 12 )? $this->todoPagoConfig['maxinstallments']:12;
+        }
+        if( isset($this->todoPagoConfig['timeout_enabled']) && $this->todoPagoConfig['timeout_enabled'] == 1  ){
+          $optionsSAR_operacion['TIMEOUT'] =  $this->todoPagoConfig['todopago_timeout'];
+        }
+
+
         //$this->logger = new TodoPagoLogger($order->id);
         $this->logger->debug("optionsSAR_operacion: ".json_encode($optionsSAR_operacion));
-        
+
         return $optionsSAR_operacion;
     }
 }

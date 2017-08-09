@@ -3,7 +3,7 @@
 
     chdir('../../../../');
     require('includes/application_top.php');
-    require_once(DIR_FS_CATALOG."/includes/modules/payment/todopagoplugin/includes/TodoPago/lib/Sdk.php");
+    require_once(DIR_FS_CATALOG."/includes/modules/payment/todopagoplugin/includes/vendor/todopago/php-sdk/TodoPago/lib/Sdk.php");
     require_once(DIR_FS_CATALOG."/includes/modules/payment/todopagoplugin/includes/Logger/loggerFactory.php");
 
     global $db;
@@ -11,6 +11,8 @@
     $order_id = isset($_POST['order_id']) ? $_POST['order_id'] : null;
     $amount = isset($_POST['amount']) ? $_POST['amount'] : null;
     $refund_type = isset($_POST['refund_type']) ? $_POST['refund_type'] : null;
+
+    $logger = loggerFactory::createLogger(false, "test", 0, $order_id);
 
     if($order_id != null && $refund_type != null){
 
@@ -34,8 +36,9 @@
                 "Merchant" => $config['test_merchant'],
                 "RequestKey" => $requestKey 
             );
-
+	    $logger->info("Devolucion PARAMS: ".json_encode($options));
             $voidResponse = $connector->voidRequest($options);
+	    $logger->info("Devolucion RESPONSE: ".json_encode($voidResponse));
 
             if($voidResponse['StatusCode'] == 2011){
 
@@ -52,9 +55,9 @@
 
                 tep_db_query("update orders set orders_status = '" . (int)$new_order_status . "' where orders_id = '" . (int)$order_id . "'");
 
-                $response = "La anulacion se realizo satisfactoriamente";
+                $response = "La devolucion se realizo satisfactoriamente";
             }else{
-                $response = "Ocurrio un error en la anulacion, vuelva a intentarlo en unos minutos";
+                $response = "<h4>Ocurrio un error en la devolucion, " . $voidResponse['StatusMessage'] . " vuelva a intentarlo en unos minutos</h4>"; // 13/05/2016 Se agrego el bold.
             }    
             
         }elseif($refund_type == "parcial"){
@@ -64,7 +67,9 @@
                 "RequestKey" => $requestKey, 
                 "AMOUNT" => $amount 
             );
+	    $logger->info("Devolucion PARAMS: ".json_encode($options));
             $refundResponse = $connector->returnRequest($options);
+	    $logger->info("Devolucion RESPONSE: ".json_encode($refundResponse));
 
             if($refundResponse['StatusCode'] == 2011){
             

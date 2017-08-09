@@ -2,7 +2,7 @@
     chdir('../../../../');
     require('includes/application_top.php');
     
-    require_once(DIR_FS_CATALOG."/includes/modules/payment/todopagoplugin/includes/TodoPago/lib/Sdk.php");
+    require_once(DIR_FS_CATALOG."includes/modules/payment/todopagoplugin/includes/vendor/autoload.php");
     require_once DIR_FS_CATALOG.'/includes/modules/payment/todopagoplugin/includes/Logger/loggerFactory.php';
 
     $orderId = $_REQUEST["order_id"];
@@ -37,10 +37,8 @@
     
         $rta = '';
         $refunds = $status['Operations']['REFUNDS'];
-        $refounds = $status['Operations']['refounds'];
 
         $auxArray = array(
-             "refound" => $refounds, 
              "REFUND" => $refunds
              );
 
@@ -54,23 +52,27 @@
 
         if (isset($status['Operations']) && is_array($status['Operations']) ) {
             foreach ($status['Operations'] as $key => $value) {
-           
+
                  if(is_array($value) && $key == $auxColection){
-                   
+
                     $rta .= " $key: \n";
-                    foreach ($auxArray[$aux] as $key2 => $value2) {              
-                        $rta .= "  $aux: \n";                
-                        if(is_array($value2)){                    
+                    foreach ($auxArray[$aux] as $key2 => $value2) {
+                        $rta .= "  $aux: \n";
+                        if(is_array($value2)){
                             foreach ($value2 as $key3 => $value3) {
-                                if(is_array($value3)){                    
+                                if(is_array($value3)){
                                     foreach ($value3 as $key4 => $value4) {
                                         $rta .= "   - $key4: $value4 </br>";
                                     }
-                                 }
+                                 } else {
+				        $rta .= "   - $key3: $value3 </br>";
+				 }
                             }
-                        }
-                    }            
-                 }else{             
+                        } else {
+				$rta .= "$key2: $value2 </br>";
+			}
+                    }
+                 }else{
                      if(is_array($value)){
                          $rta .= "$key: </br>";
                      }else{

@@ -205,7 +205,11 @@ function rowOutEffect(object) {
 <h1><?php echo HEADING_TITLE; ?></h1>
 
 <div>
+<?php if(isset($_GET["msg"])):?>    
+	<h4 style="color: red;"><?php echo $_GET["msg"]; ?></h4>
+<?php else: ?> 
     <h4 style="color: red;">No se ha podido realizar el pago, por favor intente nuevamente.</h4>
+<?php endif;?>
 </div>
 
 <?php echo tep_draw_form('checkout_address', tep_href_link(FILENAME_CHECKOUT_SHIPPING, '', 'SSL'), 'post', '', true) . tep_draw_hidden_field('action', 'process'); ?>

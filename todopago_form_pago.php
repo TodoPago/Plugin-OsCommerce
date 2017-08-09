@@ -5,7 +5,7 @@
   require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'includes'.DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR.'payment'.DIRECTORY_SEPARATOR.'todopagoplugin'.DIRECTORY_SEPARATOR.'includes'.DIRECTORY_SEPARATOR.'TodopagoTransaccion.php');
   require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'includes'.DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR.'payment'.DIRECTORY_SEPARATOR.'stripe.php');
   require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'includes'.DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR.'payment'.DIRECTORY_SEPARATOR.'todopagoplugin.php');
-  
+
   require(DIR_WS_LANGUAGES . $language . '/todopago_form_pago.php');
 
   $breadcrumb->add(NAVBAR_TITLE, tep_href_link(FILENAME_SHOPPING_CART));
@@ -17,7 +17,7 @@
 
   //set url external form library
   $library = "resources/TPHybridForm-v0.1.js";
-  
+
   if($fetch_result['ambiente'] == "test"){
     $endpoint = "https://developers.todopago.com.ar/";
   }else{
@@ -37,7 +37,7 @@
       if($response['public_request_key'] != null || $response['public_request_key'] != ''){
 
         $publicKey = $response['public_request_key'];
-        
+
         //user, mail
         $customer_data = tep_db_query('SELECT * FROM customers');
         $customer_data = tep_db_fetch_array($customer_data);
@@ -47,12 +47,12 @@
 
       }else{
         header('Location: '.tep_href_link('checkout_shipping_retry.php', '', 'SSL'));
-        die();  
+        die();
       }
 
     }else{
       header('Location: '.tep_href_link('checkout_shipping_retry.php', '', 'SSL'));
-      die();  
+      die();
     }
 
   }else{
@@ -76,7 +76,7 @@
     <div id="tp-content-form">
       <div>
         <span class="tp-label">Eleg&iacute; tu forma de pago </span>
-        <select id="formaDePagoCbx"></select> 
+        <select id="formaDePagoCbx"></select>
       </div>
       <div>
         <select id="bancoCbx"></select>
@@ -85,6 +85,10 @@
         <select id="promosCbx" class="left"></select>
         <label id="labelPromotionTextId" class="left tp-label"></label>
         <div class="clear"></div>
+      </div>
+      <div>
+        <label id="labelPeiCheckboxId"></label>
+        <input id="peiCbx"/>
       </div>
       <div>
         <input id="numeroTarjetaTxt"/>
@@ -107,16 +111,21 @@
         <select id="tipoDocCbx"></select>
       </div>
       <div>
-        <input id="nroDocTxt"/> 
+        <input id="nroDocTxt"/>
       </div>
       <div>
         <input id="emailTxt"/><br/>
       </div>
+      <div>
+        <label id="labelPeiTokenTextId"></label>
+        <input id="peiTokenTxt"/>
+      </div>
       <div id="tp-bt-wrapper">
         <button id="MY_btnConfirmarPago"/>
         <button id="btnConfirmarPagoValida" class="tp-button ui-button ui-widget ui-state-default ui-corner-all ui-button-text-icon-primary ui-priority-secondary">Pagar</button>
+        <button id='MY_btnPagarConBilletera' title="Pagar con billetera virtual" class='button tp-button ui-button ui-widget ui-state-default ui-corner-all ui-button-text-icon-primary ui-priority-secondary'><span>Pagar con billetera virtual</span></button>
       </div>
-    </div>  
+    </div>
   </div>
 
   <script>
@@ -124,10 +133,11 @@
     urlOri = document.location.pathname;
     file ="/second_step_todopago.php?Order=";
     errorRed = "/checkout_shipping_retry.php";
+    errorTimeout = "/checkout_timeout_retry.php";
     urlFormat = urlOri.split("/").slice(0, -1).join("/");
     urlSuccessRedirect = urlFormat+file;
     urlErrorRedirect = urlFormat+errorRed;
-
+    urlErrorTimeout =  urlFormat+errorTimeout;
     /************* CONFIGURACION DEL API ************************/
     window.TPFORMAPI.hybridForm.initForm({
       callbackValidationErrorFunction: 'validationCollector',
@@ -142,31 +152,43 @@
       botonPagarId: 'MY_btnConfirmarPago',
       codigoSeguridadTxt: 'Codigo',
     });
-    
+
     window.TPFORMAPI.hybridForm.setItem({
       publicKey: $('#security').attr("data-securityKey"),
       defaultNombreApellido: $('#user').attr("data-user"),
       defaultMail: $('#mail').attr("data-mail"),
       defaultTipoDoc: 'DNI'
     });
-    
+
     function validationCollector(response) {
       var errorMessage="<div class='messageStackError'><img src='images/icons/error.gif' alt='Error' title='Error'>"+response.error+"</div>";
       $("#validationMessage").append(errorMessage);
     }
-    function billeteraPaymentResponse(response) {
+      function billeteraPaymentResponse(response) {
+      if(!response.AuthorizationKey){
+        window.location.href = document.location.origin + urlErrorTimeout + "?msg=" + response.ResultMessage;
+      }else{
+        window.location.href = document.location.origin + urlSuccessRedirect + <?php echo $id_decode ?> + "&Answer=" + response.AuthorizationKey;
+      }
     }
+
     function customPaymentSuccessResponse(response) {
       window.location.href = document.location.origin + urlSuccessRedirect + <?php echo $id_decode ?> + "&Answer=" + response.AuthorizationKey;
     }
+
     function customPaymentErrorResponse(response) {
-      window.location.href = document.location.origin + urlErrorRedirect;
+      if(!response.AuthorizationKey){
+        window.location.href = document.location.origin + urlErrorTimeout + "?msg=" + response.ResultMessage;
+      }else{
+        window.location.href = document.location.origin + urlSuccessRedirect + <?php echo $id_decode ?> + "&Answer=" + response.AuthorizationKey;
+      }
     }
+    
     function initLoading() {
 
     }
     function stopLoading() {
-      
+
     }
 
     $( document ).ready(function() {
@@ -192,11 +214,8 @@
       <td align="center" width="25%" class="checkoutBarCurrent"><?php echo CHECKOUT_BAR_PAYMENTTP; ?></td>
     </tr>
   </table>
-</div>   
+</div>
 <?php
   require(DIR_WS_INCLUDES . 'template_bottom.php');
   require(DIR_WS_INCLUDES . 'application_bottom.php');
 ?>
-
-
-

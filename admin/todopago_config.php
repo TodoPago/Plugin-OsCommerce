@@ -7,22 +7,47 @@
   Released under the GNU General Public License
 */
 require('includes/application_top.php');
-require_once dirname(__FILE__).'/../includes/modules/payment/todopagoplugin/includes/TodoPago/lib/Sdk.php';
+//require_once dirname(__FILE__).'/../includes/modules/payment/todopagoplugin/includes/TodoPago/lib/Sdk.php';
+require_once dirname(__FILE__).'/../includes/modules/payment/todopagoplugin/includes/vendor/autoload.php';
 require_once dirname(__FILE__).'/../includes/modules/payment/todopagoplugin/includes/todopago_ctes.php';
 require(DIR_WS_INCLUDES . 'template_top.php');
 $mensaje ="";
 //valida y guarda codigo de autorizacion
 if (isset($_POST["authorization"]) && isset($_POST["submit"])){
-    $autorization_post = str_replace('\"', '"', $_POST["authorization"]);     
+    $autorization_post = str_replace('\"', '"', $_POST["authorization"]);
     if(json_decode($autorization_post) == NULL) {
-        //armo json de autorization        
+        //armo json de autorization
         $autorizationId = new stdClass();
         $autorizationId->Authorization = $_POST["authorization"];
         $_POST["authorization"] = json_encode($autorizationId);
-    } 
+    }
+
+    if (isset($_POST["maxinstallments_enabled"])){
+         $_POST["maxinstallments_enabled"] = ($_POST["maxinstallments_enabled"] == true)? 1:0;
+    }else $_POST["maxinstallments_enabled"] = 0;
+    if (isset($_POST["timeout_enabled"])){
+         $_POST["timeout_enabled"] = ($_POST["timeout_enabled"] == true)? 1:0;
+    }else $_POST["timeout_enabled"] = 0;
+    if (isset($_POST["emptycart_enabled"])){
+         $_POST["emptycart_enabled"] = ($_POST["emptycart_enabled"] == true)? 1:0;
+    }else $_POST["emptycart_enabled"] = 0;
     unset($_POST["submit"]);
-    $query = "update todo_pago_configuracion set ";        
+
+    $query = "update todo_pago_configuracion set ";
     foreach($_POST as $key=>$value){
+	if($key == "todopago_timeout") {
+		if(empty($value)) {
+			$value = 30*60*1000;
+		}
+		else if($value >= 6*60*60*1000) {
+			$value = 6*60*60*1000;
+		}
+		else if($value <= 5*60*1000) {
+			$value = 5*60*1000;
+		} else {
+			$value = 30*60*1000;
+		}
+	}
         $query .= $key. "='".$value."',";
     }
     $query = trim($query,",");
@@ -34,7 +59,7 @@ $sql = "select * from todo_pago_configuracion";
 $res = tep_db_query($sql);
 $row = tep_db_fetch_array($res);
 $autorization = json_decode($row['authorization']);
-   
+
 ?>
 <link rel="stylesheet" type="text/css" href="../includes/modules/payment/todopagoplugin/todopago.css"/>
 <!-- DataTables CSS -->
@@ -78,43 +103,44 @@ $autorization = json_decode($row['authorization']);
                     <button id="btn-credentials" class="btn-config-credentials" >Obtener credenciales</button>
                     <div id="credentials-login" class="order-action-popup" style="display:none;">
                         <img src="http://www.todopago.com.ar/sites/todopago.com.ar/files/logo.png">
-                        <p>Ingresa con tus credenciales para Obtener los datos de configuración</p>    
-                        
+                        <p>Ingresa con tus credenciales para Obtener los datos de configuración</p>
+
                             <label class="control-label">E-mail</label>
                             <input id="mail" class="form-control" name="mail" type="email" value="" placeholder="E-mail"/>
                             <label class="control-label">Contrase&ntilde;a</label>
                             <input id="pass" class="form-control" name="pass" type="password" value="" placeholder="Contrase&ntilde;a"/>
                             <button id="btn-form-credentials" style="margin:20%;" class="btn-config-credentials" >Acceder</button>
-                        
+
                     </div>
                     <style>
-                     
+
                     </style>
-                     
+
                     <script type="text/javascript">
-                        $("#btn-credentials").click(function(){   
+                        $("#btn-credentials").click(function(){
                             $( "#credentials-login" ).dialog();
                         });
-                        $("#btn-form-credentials").click(function(){ 
+                        $("#btn-form-credentials").click(function(){
                             console.log('obtengo credenciales por ajax.');
-                            $.post( "todopago_credentials.php", 
-                                    { mail: $("#mail").val(), 
-                                      pass: $("#pass").val()
-                                    }, function(data){ 
+                            $.post( "todopago_credentials.php",
+                                    { mail: $("#mail").val(),
+                                      pass: $("#pass").val(),
+				      amb:  $("#amb").val()
+                                    }, function(data){
                                         var obj = jQuery.parseJSON( data );
                                         if (obj.error_message != '0'){
                                             console.log(obj.error_message);
                                             alert(obj.error_message);
-                                        }else{                        
+                                        }else{
                                             $('input:text[name=authorization]').val(obj.Authorization);
-                                            if (obj.ambiente == 'test'){ 
+                                            if (obj.ambiente == 'test'){
                                                 $('input:text[name=test_merchant]').val(obj.merchantId);
                                                 $('input:text[name=test_security]').val(obj.apiKey);
                                             }else{
                                                 $('input:text[name=production_merchant]').val(obj.merchantId);
                                                 $('input:text[name=production_security]').val(obj.apiKey);
                                             }
-                                        }    
+                                        }
                                     }
                             );
                             $("#credentials-login").dialog('close');
@@ -125,7 +151,7 @@ $autorization = json_decode($row['authorization']);
                     <form id="form" action="" method="post">
                         <div class="input-todopago">
                             <label>Authorization HTTP (c&oacute;digo de autorizacion)</label>
-                            <input type="text" value='<?php echo  (isset($autorization->Authorization)? $autorization->Authorization:"")?>' placeholder="Authorization HTTP" name="authorization"/>           
+                            <input type="text" value='<?php echo  (isset($autorization->Authorization)? $autorization->Authorization:"")?>' placeholder="Authorization HTTP" name="authorization"/>
                         </div>
                         <?php
                         $segmento = (isset($row["segmento"])?$row["segmento"]:"");
@@ -158,7 +184,7 @@ $autorization = json_decode($row['authorization']);
                         ?>
                         <div class="input-todopago">
                             <label>Modo Desarrollo o Producci&oacute;n</label>
-                            <select name="ambiente">
+                            <select name="ambiente" id="amb">
                             <option value="">Seleccione</option>
                             <option value="test" <?php echo ($ambiente=="test"?"selected":"")?>>Desarrollo</option>
                             <option value="production" <?php echo ($ambiente=="production"?"selected":"")?>>Producci&oacute;n</option>
@@ -187,14 +213,14 @@ $autorization = json_decode($row['authorization']);
                         <div class="input-todopago">
                             <label>Security Code (Key sin PRISMA/TOD.. ni espacio)</label>
                             <input type="text" value="<?php echo  (isset($row["production_security"])?$row["production_security"]:"")?>" placeholder="Security Code" name="production_security"/>
-                        </div> 
+                        </div>
 
                         <div class="subtitulo-todopago">ESTADOS DE LA ORDEN</div>
                         <div class="input-todopago">
                             <?php
                             $sql = "select  orders_status_id,orders_status_name from ".TABLE_ORDERS_STATUS. " where language_id = 1";
                             $res = tep_db_query($sql);
-                            while ($row1 = tep_db_fetch_array($res)){ 
+                            while ($row1 = tep_db_fetch_array($res)){
                                 $opciones[$row1["orders_status_id"]] = $row1["orders_status_name"];
                             }
                             ?>
@@ -204,8 +230,8 @@ $autorization = json_decode($row['authorization']);
                                 foreach($opciones as $key=>$value){
                                     $selected = "";
                                     if ($key == $row["estado_inicio"]) $selected ="selected"
-                                ?>                
-                                    <option <?php echo $selected?> value="<?php echo $key?>"><?php echo $value?></option>    
+                                ?>
+                                    <option <?php echo $selected?> value="<?php echo $key?>"><?php echo $value?></option>
                                 <?php
                                 }
                                 ?>
@@ -218,9 +244,9 @@ $autorization = json_decode($row['authorization']);
                                 <?php
                                 foreach($opciones as $key=>$value){
                                      $selected = "";
-                                    if ($key == $row["estado_aprobada"]) $selected ="selected"                   
+                                    if ($key == $row["estado_aprobada"]) $selected ="selected"
                                 ?>
-                                    <option <?php echo $selected?> value="<?php echo $key?>"><?php echo $value?></option>    
+                                    <option <?php echo $selected?> value="<?php echo $key?>"><?php echo $value?></option>
                                 <?php
                                 }
                                 ?>
@@ -235,7 +261,7 @@ $autorization = json_decode($row['authorization']);
                                      $selected = "";
                                     if ($key == $row["estado_rechazada"]) $selected ="selected"
                                 ?>
-                                    <option <?php echo $selected?> value="<?php echo $key?>"><?php echo $value?></option>    
+                                    <option <?php echo $selected?> value="<?php echo $key?>"><?php echo $value?></option>
                                 <?php
                                 }
                                 ?>
@@ -250,7 +276,7 @@ $autorization = json_decode($row['authorization']);
                                      $selected = "";
                                     if ($key == $row["estado_offline"]) $selected ="selected"
                                 ?>
-                                    <option <?php echo $selected?> value="<?php echo $key?>"><?php echo $value?></option>    
+                                    <option <?php echo $selected?> value="<?php echo $key?>"><?php echo $value?></option>
                                 <?php
                                 }
                                 ?>
@@ -263,8 +289,60 @@ $autorization = json_decode($row['authorization']);
                             <div style="float:left;">
                                 <div style="margin-bottom:8px;"><input type="radio" name="tipo_formulario" value="0" <?php echo ($row['tipo_formulario'] == 0)?'checked="checked"' :'' ?> >Formulario externo<br></div>
                                 <div><input type="radio" name="tipo_formulario" value="1" <?php echo ($row['tipo_formulario'] == 1)?'checked="checked"' :'' ?> >Formulario integrado al e-commerce</div>
-                            </div>  
-                            <div style="clear:both;"></div>  
+                            </div>
+                            <div style="clear:both;"></div>
+                        </div>
+                        <br><br>
+
+
+                        <div class="input-todopago">
+                            <label style="float:left;">Cantidad máxima de cuotas que ofrecerá el formulario</label>
+                            <div style="float:left;">
+                                <select name="maxinstallments">
+                                    <?php
+                                    for( $i=1 ; $i <= 12 ; $i++){
+                                         $selected = "";
+                                        if ($i == $row["maxinstallments"]) $selected ="selected"
+                                        ?>
+                                        <option <?php echo $selected?> value="<?php echo $i?>"><?php echo $i ?></option>
+                                        <?php
+                                    } // ENDFOR
+                                    ?>
+                                </select>
+                            </div>
+                            <div style="clear:both;"></div>
+                        </div>
+                        <div class="input-todopago">
+                            <label style="float:left;">Habilitar cantidad máxima de cuotas</label>
+                            <div style="float:left;">
+                                <div style="margin-bottom:8px;">
+                                    <input type="checkbox" name="maxinstallments_enabled" <?php echo ($row['maxinstallments_enabled'] == 1)?' checked="checked"' :'' ?> >Habilitar<br>
+                                </div>
+                            </div>
+                            <div style="clear:both;"></div>
+                        </div>
+                        <div class="input-todopago">
+                            <label>Timeout</label>
+                            <input type="number" value="<?php echo  (isset($row["todopago_timeout"])?$row["todopago_timeout"]:"")?>" placeholder="" name="todopago_timeout"/>
+                        </div>
+                        <div class="input-todopago">
+                            <label style="float:left;">Activar timeout</label>
+                            <div style="float:left;">
+                                <div style="margin-bottom:8px;">
+                                    <input type="checkbox" name="timeout_enabled" <?php echo ($row['timeout_enabled'] == 1)?' checked="checked"' :'' ?> >Habilitar<br>
+                                </div>
+                            </div>
+                            <div style="clear:both;"></div>
+                        </div>
+                        <div class="input-todopago">
+                            <label style="float:left;">Vaciar carrito</label>
+                            <div style="float:left;">
+                                <div style="margin-bottom:8px;">
+                                    <input type="checkbox" name="emptycart_enabled" <?php echo ($row['emptycart_enabled'] == 1)?' checked="checked"' :'' ?> >Habilitar<br>
+<p>Si esta habilitado, ante un pago fallido se vaciará el carrito de compras.</p>
+                                </div>
+                            </div>
+                            <div style="clear:both;"></div>
                         </div>
                         <br><br>
                         <input  type="submit" name="submit" value="Guardar Datos"/>
@@ -291,7 +369,7 @@ $autorization = json_decode($row['authorization']);
                                 $res = tep_db_query($sql);
                                 // echo $sql;
                                 $i =0;
-                                while ($row = tep_db_fetch_array($res)){ 
+                                while ($row = tep_db_fetch_array($res)){
                                     $sql = "select * from todo_pago_atributos where product_id=".$row["products_id"];
                                     $res2 = tep_db_query($sql);
                                     $tipoDelivery = "";
@@ -304,15 +382,15 @@ $autorization = json_decode($row['authorization']);
                                         if ($row2["CSMDD33"] != "") $diasEvento = $row2["CSMDD33"];
                                         if ($row2["CSMDD34"] != "") $tipoEnvio = $row2["CSMDD34"];
                                         if ($row2["CSMDD28"] != "") $tipoServicio = $row2["CSMDD28"];
-                                        if ($row2["CSMDD31"] != "") $tipoDelivery = $row2["CSMDD31"];       
+                                        if ($row2["CSMDD31"] != "") $tipoDelivery = $row2["CSMDD31"];
                                     }
                                     $i=$row["products_id"];
                                     echo "<tr><td>".$row["products_id"]."</td><td id='nombre".$i."'>".$row["products_name"]."</td><td id='codigo".$i."'>".$codigoProducto."</td><td id='evento".$i."'>".$diasEvento."</td><td id='envio".$i."'>".$tipoEnvio."</td><td id='servicio".$i."'>".$tipoServicio."</td><td id='delivery".$i."'>".$tipoDelivery."</td><td class='editar' id='".$i."'>Editar</td></tr>";
                                 }
-                                    
+
                                 ?>
                             </tbody>
-                        </table> 
+                        </table>
                         <div id="config-producto-todopago">
                             <div class="close-todopago">x</div>
                             <table>
@@ -402,36 +480,36 @@ $autorization = json_decode($row['authorization']);
                         </div>
                         <script type="text/javascript">
                             $(document).ready(function(){
-                                
+
                                 $('.close-todopago').click(function(){
                                     $('#config-producto-todopago').hide();
                                 });
-                                
+
                                 $("#guardar").click(function(){
-                                    
+
                                     $('#config-producto-todopago').hide();
-                                    $.post( "ext/modules/payment/todopago/todo_pago_config_ajax.php", 
-                                        { CSITPRODUCTCODE:$("#codigo_producto").val(), 
-                                          CSMDD33: $("#dias_evento").val(),  
+                                    $.post( "ext/modules/payment/todopago/todo_pago_config_ajax.php",
+                                        { CSITPRODUCTCODE:$("#codigo_producto").val(),
+                                          CSMDD33: $("#dias_evento").val(),
                                           CSMDD34: $("#envio_producto").val() ,
                                           CSMDD28: $("#servicio_producto").val() ,
                                           CSMDD31: $("#delivery_producto").val() ,
                                           product_id: $("#id_producto").val()
                                         }, function(){
-                                          
+
                                             $("#codigo"+$("#id_producto").val()).html($("#codigo_producto").val());
                                             $("#evento"+$("#id_producto").val()).html($("#dias_evento").val());
                                             $("#envio"+$("#id_producto").val()).html($("#envio_producto").val());
                                             $("#delivery"+$("#id_producto").val()).html($("#delivery_producto").val());
-                                            $("#servicio"+$("#id_producto").val()).html($("#servicio_producto").val());            
+                                            $("#servicio"+$("#id_producto").val()).html($("#servicio_producto").val());
                                         }
-                                  ); 
-                                    
+                                  );
+
                                 });
-                                
-                                
+
+
                                 $(".editar").click(function(){
-                                    
+
                                     $('#config-producto-todopago').hide();
                                     $('#config-producto-todopago').show();
                                     $("#id_producto").val($(this).attr("id"));
@@ -443,12 +521,12 @@ $autorization = json_decode($row['authorization']);
                                     $("#servicio_producto").val($("#servicio"+$(this).attr("id")).html());
                             });
                             $('#data-table').dataTable(
-                                            {bFilter: true, 
+                                            {bFilter: true,
                                             bInfo: true,
                                             bPaginate :true,
-                                            
+
                                             });
-                              })  
+                              })
                         </script>
                     </form>
                 </div>
@@ -473,17 +551,17 @@ $autorization = json_decode($row['authorization']);
                             $res = tep_db_query($sql);
                             // echo $sql;
                             $i =0;
-                            while ($row = tep_db_fetch_array($res)){ 
-                                
+                            while ($row = tep_db_fetch_array($res)){
+
                              echo "<tr><td>".$row["orders_id"]."</td><td>".$row["customers_name"]."</td><td>".$row["customers_telephone"]."</td><td>".$row["customers_email_address"]."</td><td>".$row["date_purchased"]."</td><td>".$row["orders_status_name"]."</td><td class='refund-td' data-order_id='".$row["orders_id"]."' style='cursor:pointer'>Devolver</td><td class='status' id='".$row["orders_id"]."' style='cursor:pointer'>Ver Status</td></tr>";
                             }
-                                
+
                             ?>
                         </tbody>
                     </table>
                     <div id="status-orders" class="order-action-popup">
                         <div class="close-status-todopago close-todopago">x</div>
-                        <div id="status">
+                        <div id="status" style="overflow: scroll;max-height:350px">
                         </div>
                     </div>
                     <div id="refund-dialog" class="order-action-popup" hidden="hidden" style="display:block;">
@@ -498,6 +576,9 @@ $autorization = json_decode($row['authorization']);
                             <p id="amount-div" hidden="hidden">
                                 <label for="amount-input">Monto: $</label>
                                 <input type="number" id="amount-input" name="amount" min=0.01 step=0.01 />
+                                <br/>
+                                <br/>
+                                <i>    * El monto de devolución se calcula en base al costo original del producto sin los impuestos agregados.</i>
                                 <span id="invalid-amount-message" style="color: red;"><br />Ingrese un monto</span>
                             </p>
                             <p style="text-align: right;">
@@ -526,7 +607,7 @@ $autorization = json_decode($row['authorization']);
                     $(".close-refund-todopago").click(function() {
                         $('#refund-dialog').hide();
                         $('#refund-result').hide();
-                    })
+                    });
                     $("#orders-table").on("click", ".refund-td", function refundTd_click() {
                         $('.order-action-popup').hide();
                         $('#order-id-hidden').val($(this).attr("data-order_id"));
@@ -550,8 +631,25 @@ $autorization = json_decode($row['authorization']);
                                 refund_type: $("#refund-type-select").val(),
                                 amount: $("#amount-input").val()
                             }, function(response) {
-                                $("#refund-form").hide();
-                                $("#refund-result").html(response);
+                                var old = document.getElementById("refund-form").innerHTML;
+				document.getElementById("refund-form").innerHTML = '<div class="close-todopago">x</div>' + response;
+                                $(".close-todopago").click(function(){
+				  document.getElementById("refund-form").innerHTML = old;
+				  $("#refund-button").click(refundButton_click);
+$(".close-todopago").click(function(){
+	$("#refund-form").hide();
+});
+$("#refund-type-select").val("total");$("#amount-div").hide();
+$("#refund-type-select").change(function refundTypeSelect_change() {
+	if ($(this).val() == 'parcial') {
+        	$("#amount-div").show();
+        } else {
+        	$("#amount-div").hide();
+        }
+});
+
+                                  $("#refund-form").hide();
+                                })
                                 $("#refund-result").show();
                             })
                         }
@@ -560,6 +658,13 @@ $autorization = json_decode($row['authorization']);
                         }
                     });
                 });
+                $(".close-todopago").click(function(){
+<<<<<<< HEAD
+=======
+                  alert("sdfdsefd");
+>>>>>>> origin/feature-partial-maxAmount
+                  $("#refund-form").hide();
+                })
                 $('#orders-table').dataTable({
                 bFilter: true,
                 bInfo: true,
@@ -594,3 +699,61 @@ $autorization = json_decode($row['authorization']);
 <?php
   require(DIR_WS_INCLUDES . 'application_bottom.php');
 ?>
+<script>
+jQuery(document).ready(function() {
+  jQuery("input[name='todopago_timeout']").attr('disabled', 'disabled');
+
+    jQuery(function() {
+        if (jQuery("input[name='timeout_enabled']").is(':checked')) {
+            jQuery("input[name='todopago_timeout']").attr('disabled', false);
+
+
+        } else {
+
+            jQuery("input[name='todopago_timeout']").attr('disabled', 'disabled');
+
+        }
+
+        if (jQuery("input[name='maxinstallments_enabled']").is(':checked')) {
+            jQuery("select[name='maxinstallments']").attr('disabled', false);
+
+
+        } else {
+
+            jQuery("select[name='maxinstallments']").attr('disabled', 'disabled');
+
+        }
+
+
+    });
+
+    jQuery("input[name='timeout_enabled']").click(function() {
+
+        if (jQuery("input[name='timeout_enabled']").is(':checked')) {
+            jQuery("input[name='todopago_timeout']").attr('disabled', false);
+
+
+        } else {
+
+            jQuery("input[name='todopago_timeout']").attr('disabled', 'disabled');
+
+        }
+
+    });
+
+    jQuery("input[name='maxinstallments_enabled']").click(function() {
+        if (jQuery("input[name='maxinstallments_enabled']").is(':checked')) {
+            jQuery("select[name='maxinstallments']").attr('disabled', false);
+
+
+        } else {
+
+            jQuery("select[name='maxinstallments']").attr('disabled', 'disabled');
+
+        }
+
+    });
+
+
+});
+  </script>
