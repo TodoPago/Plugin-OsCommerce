@@ -1,6 +1,6 @@
 <a name="inicio"></a>
 Oscommerce - módulo Todo Pago (v2.3.x)
-============ 
+============
 Plug in para la integración con gateway de pago <strong>Todo Pago</strong>
 - [Consideraciones Generales](#consideracionesgenerales)
 - [Instalación](#instalacion)
@@ -96,9 +96,15 @@ c. Los datos se cargaran automaticamente en los campos Merchant ID y Security co
 En la configuracion del plugin tambien estara la posibilidad de mostrarle al cliente el formulario de pago de TodoPago integrada en el sitio.
 Para esto , en la configuracion se debe seleccionar el campo formulario integrado al e-commerce:
 ![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/oscommerce/formHibrid1.png)
-<sub></br>Del lado del cliente el formulario se vera asi:</br></sub>
-![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/oscommerce/formHibrid2.png)
 </br>
+<sub></br>Del lado del cliente el formulario se vera asi:</sub>
+</br>
+![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/oscommerce/formHibrid3.1.png)
+
+Además del formulario para cargar los datos de la tarjeta, el usuario puede comprar utilizando su cuenta de Billetera Virtual.  Para acceder a esta basta con hacer click en el botón correspondiente que mostrará el siguiente formulario.
+
+![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/oscommerce/billeteraVirtual.png)
+
 [<sub>Volver a inicio</sub>](#inicio)
 
 <a name="maxcuotas"></a>
@@ -109,13 +115,14 @@ Se puede configurar la cantidad máxima de cuotas que ofrecerá el formulario de
 [<sub>Volver a inicio</sub>](#inicio)
 
 <a name="features"></a>
-## Caracteristicas
+## Características
+
 
 <a name="devoluciones"></a>
 #### Devoluciones
 TodoPago permite realizar la devolucion total o parcial de dinero de una orden de compra.<br>
-Para ello dirigirse en el menú a Tools->TodoPago configuracion->Ordenes, en esta pagina se encuentra las ordenes de compra realizadas con Todopago.<br>
-En cada orden se encuentra la opcion "Devolver" que mostrara un modal con la opcion de devolucion total y devolucion parcial junto con el campo para ingresar el monto.<br><br>
+Para ello dirigirse en el menú a Tools->TodoPago configuracion->Ordenes, en esta pagina se encuentra las ordenes de compra realizadas con Todopago.
+En cada orden se encuentra la opcion "Devolver" que mostrara un modal con la opcion de devolucion total y devolucion parcial junto con el campo para ingresar el monto.
 ![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/oscommerce/devoluciones-modal.png)
 [<sub>Volver a inicio</sub>](#inicio)
 
@@ -183,6 +190,8 @@ Provincias: Al ser un campo MANDATORIO para enviar y propio del plugin este camp
 <a name="codigoerrores"></a>
 ## Tabla de errores operativos
 
+<table>		
+<tr><th>Id mensaje</th><th>Mensaje</th></tr>				
 <table>
 <tr><th>Id mensaje</th><th>Mensaje</th></tr>
 <tr><td>-1</td><td>Aprobada.</td></tr>
@@ -364,7 +373,7 @@ Provincias: Al ser un campo MANDATORIO para enviar y propio del plugin este camp
   <thead>
   <tbody>
     <tr>
-      <td><a href="https://github.com/TodoPago/Plugin-OsCommerce/archive/master.zip">v1.8.0</a></td>
+      <td><a href="https://github.com/TodoPago/Plugin-OsCommerce/archive/master.zip">v1.9.0</a></td>
       <td>Stable (Current version)</td>
       <td>Community Edition 2.2.x - 2.3.x
       </td>

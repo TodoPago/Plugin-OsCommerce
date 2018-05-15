@@ -1,64 +1,654 @@
-#tp-form-tph{
-	/*border:1px solid #000;*/
+/*  SECTIONS  ============================================================================= */
+
+/*.section {
+	clear: both;
+	padding: 0px;
+	margin: 0px;
+}*/
+
+/*  GROUPING  ============================================================================= */
+
+.tp_row {
+    zoom: 1; /* For IE 6/7 (trigger hasLayout) */
 }
-#tp-form-tph input, #tp-form-tph select {
-	display: block;
-	margin:8px 0px 0px 13px;
-	height: 20px;
+
+.tp_row:before,
+.tp_row:after {
+    content: "";
+    display: table;
 }
-.modal-class {
+
+.tp_row:after {
+    clear: both;
+}
+
+/*  GRID COLUMN SETUP   ==================================================================== */
+.tp_col {
+    display: block;
+    float: left;
+    margin: 1% 0 1% 1.6%;
+}
+
+.tp_col:first-child {
+    margin-left: 0;
+}
+
+
+/* all browsers except IE6 and lower */
+
+/*  REMOVE MARGINS AS ALL GO FULL WIDTH AT 480 PIXELS */
+
+@media only screen and (max-width: 480px) {
+    .tp_col {
+        /*margin: 1% 0 1% 0%;*/
+        margin: 0;
+    }
+}
+
+/*  GRID OF TWO   ============================================================================= */
+
+.tp_span_2_of_2 {
+    width: 100%;
+}
+
+.tp_span_1_of_2 {
+    width: 49.2%;
+}
+
+/*  GO FULL WIDTH AT LESS THAN 480 PIXELS */
+
+@media only screen and (max-width: 480px) {
+    .tp_span_2_of_2 {
+        width: 100%;
+    }
+
+    .tp_span_1_of_2 {
+        width: 100%;
+    }
+}
+
+/*  GRID OF THREE   ============================================================================= */
+
+.tp_span_3_of_3 {
+    width: 100%;
+}
+
+.tp_span_2_of_3 {
+    width: 66.13%;
+}
+
+.tp_span_1_of_3 {
+    width: 37.26%;
+}
+
+/*  GO FULL WIDTH AT LESS THAN 480 PIXELS */
+
+@media only screen and (max-width: 480px) {
+    .tp_span_3_of_3 {
+        width: 100%;
+    }
+
+    .tp_span_2_of_3 {
+        width: 100%;
+    }
+
+    .tp_span_1_of_3 {
+        width: 100%;
+    }
+}
+
+/*-------------------------------------*/
+/*GENERAL CONFIGURATION*/
+/*-------------------------------------*/
+.tp_wrapper {
+    outline: 0;
+    font-size: 115%;
+    color: #909090;
+    width: 90%;
+    margin: 0 5%;
+}
+
+.confirmacion{
+        font-size: 10px !important;
+        text-transform: uppercase !important;
 
 }
-.modal-content {
+
+/*-------------------------------------*/
+/*GRID CONFIGURATION*/
+/*-------------------------------------*/
+
+.tp_col {
+    overflow-x: hidden;
+}
+
+/*-------------------------------------*/
+/*REUSABLE COMPONENTS*/
+/*-------------------------------------*/
+.tp_btn:link,
+.tp_btn:hover {
+    color: #fff;
+}
+
+.tp_btn {
+    width: 75%;
+    padding: 7px 50px;
+    font-weight: bold;
+    border: 0;
+    border-radius: 4px;
+    background-color: #E6007E;
+    color: #fff;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+    margin: 0 0 0 12%;
+}
+
+.tp_btn:hover {
+    background-color: #ee0075;
+    color: #fff;
+}
+
+.tp_btn .tp_btn_sm {
+    width: 70%;
+}
+
+.tp_btn .tp_btn_lg {
+    width: 100%;
+}
+
+section {
+
+    margin-bottom: 30px;
+    margin-top: 15px;
+    padding: 30px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    -webkit-box-shadow: 0 0 2px rgba(131, 121, 112, 0.4);
+    box-shadow: 0 0 2px rgba(131, 121, 112, 0.4);
 
 }
-#tp-bt-wrapper{
-	margin:0px 0px 0px 9px;
+
+.tp_color_text {
+    color: #E6007E;
 }
-.tp-button{
-	margin:2px 4px 2px 3px;
-	padding: 5px 8px 6px 8px;
+
+.tp_color_text:hover {
+    color: red;
 }
-#tp-logo{
-	background-image: url("includes/logo_tp.png");
-	background-repeat: no-repeat;
-	height:40px;
-	width:110px;
-	margin: 12px 0 4px 32px;
+
+.element_invisible {
+    overflow: hidden;
+    visibility: hidden;
+    height: 1px;
+    position: absolute;
 }
-#tp-content-form{
-	padding: 11px 0;
-	/*width:300px;*/
-	margin: -2px 0 0 21px;
+
+h1 {
+    font-size: 140%;
 }
-#tp-content-form .dateFields input{	
-	width:41px;
+
+.text_small {
+    display: inline-block;
+    float: left;
+    /*height: 35px;*/
+    font-size: 63%;
+    margin-bottom: 6px;
 }
-.dateFields .spacer{	
-	margin: 14px -6px 0px 7px;
+
+h3 {
+    font-size: 19px;
 }
-#MY_btnConfirmarPago{
-	display:none;
+
+.billetera_virtual_tp,
+.billetera_tp,
+.billeterafm_tp {
+    border: 1px solid rgba(196, 196, 196, 0.55);
 }
+
+.billeterafm_tp {
+    display: none;
+}
+
+.error {
+    margin-top: 3px;
+
+    color: red;
+    font-size: 9px;
+    text-transform: inherit;
+}
+
+#promosLbl {
+    font-size: 25px;
+    margin: -14px 0 0 6px;
+    font-weight: normal;
+}
+
+#tpForm {
+    display: none;
+}
+
+button {
+    cursor: pointer !important;
+}
+
+/*-------------------------------------*/
+/*FORMS*/
+/*-------------------------------------*/
+.tp_form_control {
+    margin-bottom: 5px;
+    height: 35px;
+    display: inline-block;
+    width: 100%;
+}
+
+input.tp_form_control {
+    border: 0;
+    border-bottom: 1px solid #c4c4c4;
+    color: #909090;
+
+    font-size: 12px !important;
+}
+
+input[type=text].tp_form_control,
+input[type=email].tp_form_control,
+input[type=password].tp_form_control,
+select.tp_form_control {
+    background-color: #fff;
+    padding: 0 3%;
+    border-top: 0px solid #000;
+    border-left: 0px solid #000;
+    border-right: 0px solid #000;
+    border-bottom: 1px solid #c4c4c4;
+    color: #909090;
+}
+
+select:disabled {
+    background-color: #eeeeee;
+}
+
+.med_width {
+    width: 50%;
+}
+
+.full_width {
+    width: 100%;
+}
+
+#formaPagoCbx {
+    display: none;
+}
+
+label {
+    text-transform: uppercase;
+    color: #909090;
+}
+
+/*pei box*/
+#peibox {
+    margin-top: -5px;
+    margin-bottom: 15px;
+    padding: 0 0 0 0 !important;
+    display: none;
+    border: 1px solid #c4c4c4;
+    color: #555369;
+    background-color: #eee;
+    padding: 0 0 0 0 !important;
+}
+
+.pei_wrapper{
+  width:80% !important;
+}
+
+#peiLbl{
+    height:77px !important;
+
+}
+
+#peiLbl strong {
+    margin:0 0 4px 15px;
+    font-size: 12px !important;
+    width: 100%; 
+}
+
+#peiLbl p {
+    margin:3px 0 0 15px !important;
+     border-top:1px solid #000;
+     font-size: 10px !important;
+
+
+
+    border-top: 1px solid #000;
+}
+
+#peiCbx {
+    margin: 0 0 0 22px;
+    opacity: 0;
+}
+
+.payment-method {
+    display: none;
+}
+
+.billeterafm_tp {
+    display: none;
+    border: 1px solid #c4c4c4;
+}
+
+.tp-flex {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+}
+
+#tp-tarjeta-logo {
+    display: none;
+    width: 40px;
+    transform: translateY(-100%);
+    margin-left: 208px;
+    position: absolute
+}
+
+#tp-powered {
+    display: flex;
+    height: 40px !important;
+    float: right;
+}
+
+#tp-powered img {
+    margin: 0 0 0 5px;
+    height: 30px !important;
+}
+
+.texto_billetera_virtual p {
+    font-size: 0.8em !important;
+    text-align: center;
+}
+
+#bancoCbx, #mesCbx, #anioCbx, #tipoDocCbx, #promosCbx{
+    font-size: 12px
+}
+
+
+/*-------------------------------------*/
+/*SWITCH*/
+/* The switch - the box around the slider */
+/*-------------------------------------*/
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+    display: none;
+}
+
+/*-------------------------------------*/
+/*THE SLIDER*/
+/* The switch - the box around the slider */
+/* Hide default HTML checkbox */
+/*-------------------------------------*/
+.switch {
+    margin: 16px 26px 0 0;
+    float: right;
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 25px;
+}
+
+.switch input {
+    display: none;
+}
+
+/* The slider */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #adadad;
+    -webkit-transition: .4s;
+    transition: .4s;
+    width: 53px;
+}
+
+.slider:before {
+    z-index: 1001;
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: #e6007e;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.tp_pei {
+    height: 115px;
+}
+
+.tp_new_line {
+    display: block;
+}
+
+/*-------------------------------------*/
+/*MEDIA QUERIES*/
+/*-------------------------------------*/
+/* Small tablet to big tablet (from 768px to 1023px) */
+@media only screen and (max-width: 1023px) {
+    /* zoom de 90% y de 110% */
+    .campos_fecha_vencimiento{
+        width: 200px
+    } 
+
+    .tp_wrapper {
+        font-size: 90%;
+    }
+
+    .text_small {
+        height: 20px;
+    }
+
+    .confirmacion {
+        font-size: 95%;
+    }
+}
+
+/* Small phones to small tablet (from 481px to 767px) */
+@media only screen and (max-width: 767px) {
+    .tp_col {
+        width: 100%;
+    }
+
+    h3 {
+        text-align: center;
+    }
+
+    .confirmacion {
+        font-size: 80%;
+    }
+}
+
+/* (from 0px to 480px) */
+@media only screen and (max-width: 480px) {
+    .tp_wrapper {
+        font-size: 65%;
+    }
+}
+
+/* -- HEADER -- */
+.tp-total {
+    border: none;
+    flex-direction: column;
+    align-content: space-around;
+    border-radius: 0;
+    font-size: 18px;
+    color: #ffffff;
+    text-align: center;
+    background-color: #c1c1c1;
+    height: 56px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.tp-total div {
+    margin: auto;
+} 
+/* -- /HEADER -- */
+
+
+
+/* -- popup cvv -- */
+.clave-ico {
+    background: transparent url(./images/clave-ico.png) no-repeat top center;
+    border: 0;
+    text-indent: -999em;
+    width: 20px;
+    height: 20px;
+    display: block;
+    margin-top: 7px;
+    outline: none;
+    box-shadow: none;
+}
+
+.tp-anexo {
+    z-index: 1000;
+
+}
+
+.tp-cvv-helper-container {
+    right: 0;
+    float: right;
+    bottom: 0;
+    /*margin-top: 50px*/
+}
+
+#tp-cvv-caller {
+
+}
+
+#tp-cvv-helper {
+    display: none;
+    margin-top: 10px;
+    flex-direction: column;
+    background: white;
+    border-radius: 0 4px 4px 4px;
+    border: gray;
+    box-shadow: 1px 1px 3px 1px #3A3A3A;
+    z-index: 1000;
+    position: absolute;
+    max-width: 300px;
+    padding: 5px;
+}
+
+#tp-cvv-helper-img {
+    float: left;
+}
+
+/*-------------------------------------*/
+/*POPOVER*/
+/*-------------------------------------*/
+
+.popover {
+    min-width: 285px;
+}
+/* -- /popup cvv -- */
+
+
+.box_campos_de_seguridad{
+    width: 58%;
+}
+
+/*
 #codigoSeguridadTxt{
-	width:36px;
+    width: 80%
 }
-.left{
-	float:left;
+*/
+
+.box2_campos_fecha_vencimiento{
+    width: 40% !important;
 }
-.right{
-	float:right;
+
+#slider-text {
+    z-index: 1000;
+    transition: all cubic-bezier(0.3, 1.5, 0.7, 1) 0.3s;
+    width: 60%;
+    height: 100%;
+    position: absolute;
+    padding: 5px 0 0 6px;
+    font-size: 12px;
+    left: 0;
+    color: white;
+    top: 0;
 }
-.clear{
-	clear:both;
+
+
+/* Pei fix */
+#peiLbl p{
+    font-size: 8px !important;
+    font-weight: normal !important;
+    padding-top: 3px;
 }
-.tp-label{
-	margin:12px 0 0 10px;
+
+#peibox{
+    padding-top: 3px;
 }
-.messageStackError{
-	margin:5px 0 0 0;
-	padding:3px 0 3px 6px;
+
+
+/* pei supera monto máximo */
+#tokenPeiLbl{
+padding: 10px 10px 10px 2px;
 }
-.messageStackError img{
-	margin: 0 3px 0 0;
+
+#tokenPeiTxt{
+width: 100%;
+
+
+
+    border: 0;
+    border-bottom: 1px solid #c4c4c4;
+    color: #909090;
+
+    font-size: 12px !important;
+
+    margin-bottom: 10px;
+}
+
+/*class="tp_form_control tp-cupon"
+*/
+
+
+.tokenPeiLblBox strong, .tokenPeiLblBox p{
+    font-size: 63% !important;
 }

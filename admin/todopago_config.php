@@ -1,25 +1,25 @@
 <?php
 /*
-  $Id$
-  osCommerce, Open Source E-Commerce Solutions
-  http://www.oscommerce.com
-  Copyright (c) 2013 osCommerce
-  Released under the GNU General Public License
+$Id$
+osCommerce, Open Source E-Commerce Solutions
+http://www.oscommerce.com
+Copyright (c) 2013 osCommerce
+Released under the GNU General Public License
 */
 require('includes/application_top.php');
 //require_once dirname(__FILE__).'/../includes/modules/payment/todopagoplugin/includes/TodoPago/lib/Sdk.php';
-require_once dirname(__FILE__).'/../includes/modules/payment/todopagoplugin/includes/vendor/autoload.php';
-require_once dirname(__FILE__).'/../includes/modules/payment/todopagoplugin/includes/todopago_ctes.php';
+require_once dirname(__FILE__) . '/../includes/modules/payment/todopagoplugin/includes/vendor/autoload.php';
+require_once dirname(__FILE__) . '/../includes/modules/payment/todopagoplugin/includes/todopago_ctes.php';
 require(DIR_WS_INCLUDES . 'template_top.php');
-$mensaje ="";
+$mensaje = "";
 //valida y guarda codigo de autorizacion
-if (isset($_POST["authorization"]) && isset($_POST["submit"])){
+if (isset($_POST["authorization"]) && isset($_POST["submit"])) {
     $autorization_post = str_replace('\"', '"', $_POST["authorization"]);
-    if(json_decode($autorization_post) == NULL) {
+    if (json_decode($autorization_post) == NULL) {
         //armo json de autorization
-        $autorizationId = new stdClass();
+        $autorizationId                = new stdClass();
         $autorizationId->Authorization = $_POST["authorization"];
-        $_POST["authorization"] = json_encode($autorizationId);
+        $_POST["authorization"]        = json_encode($autorizationId);
     }
 
     if (isset($_POST["maxinstallments_enabled"])){
@@ -50,14 +50,14 @@ if (isset($_POST["authorization"]) && isset($_POST["submit"])){
 	}
         $query .= $key. "='".$value."',";
     }
-    $query = trim($query,",");
-    $res = tep_db_query($query);
+    $query   = trim($query, ",");
+    $res     = tep_db_query($query);
     $mensaje = "La configuracion se guardo correctamente";
 }
 //obtengo elementos del formulario
-$sql = "select * from todo_pago_configuracion";
-$res = tep_db_query($sql);
-$row = tep_db_fetch_array($res);
+$sql          = "select * from todo_pago_configuracion";
+$res          = tep_db_query($sql);
+$row          = tep_db_fetch_array($res);
 $autorization = json_decode($row['authorization']);
 
 ?>
@@ -71,12 +71,69 @@ $autorization = json_decode($row['authorization']);
 <script type="text/javascript" charset="utf8" src="ext/modules/payment/todopago/javascripts/jquery.dataTables.min.js"></script>
 <script type="text/javascript" charset="utf8" src="ext/modules/payment/todopago/javascripts/dataTables.tableTools.min.js"></script>
 
+<script type="text/javascript">
+versionCompare = function(left, right) {
+    if (typeof left + typeof right != 'stringstring')
+        return false;
+    
+    var a = left.split('.')
+    ,   b = right.split('.')
+    ,   i = 0, len = Math.max(a.length, b.length);
+        
+    for (; i < len; i++) {
+        if ((a[i] && !b[i] && parseInt(a[i]) > 0) || (parseInt(a[i]) > parseInt(b[i]))) {
+            return 1;
+        } else if ((b[i] && !a[i] && parseInt(b[i]) > 0) || (parseInt(a[i]) < parseInt(b[i]))) {
+            return -1;
+        }
+    }
+    
+    return 0;
+}
+
+$.ajax({
+  method: "GET",
+  url: "https://api.github.com/repos/TodoPago/Plugin-OsCommerce/releases/latest",
+  context: document.body,
+    headers: {
+        "Authorization":"token 21600a0757d4b32418c54e3833dd9d47f78186b4",
+    }  
+}).done(function(jsonRes) {
+
+    var versionActual='<?php echo TP_VERSION; ?>';
+    //versionActual=versionActual.replace(/[^0-9.]/g, '');
+    console.log('actual: '+versionActual);
+
+    var versionProdHuman=jsonRes.tag_name;
+    var versionProd=jsonRes.tag_name;
+    versionProd=versionProd.replace(/[^0-9.]/g, '');
+    console.log('en api: '+versionProd);
+
+    if(versionCompare(versionProd, versionActual)>0){
+        console.log('Tiene una versión vieja instalada');
+        $('#tp_configuracion_version_actualiza').show();
+        //$('#tp_configuracion_version_produccion').text(versionProdHuman);
+    }
+
+    console.log('COmparación: '+versionCompare(versionProd, versionActual));
+});
+</script>
+
 <table border="0" width="100%" cellspacing="0" cellpadding="2">
     <tr>
         <td>
             <table border="0" width="100%" cellspacing="0" cellpadding="2" height="40">
                 <tr>
-                <td class="pageHeading">TodoPago (v. <?php echo TP_VERSION; ?>) | Configuraci&oacute;n </td>
+                <td class="pageHeading">
+                    TodoPago (v. <?php echo TP_VERSION; ?>) | Configuraci&oacute;n 
+
+                    <div id="tp_configuracion_version_actualiza" style="display: none">
+                        <p>
+				Se encuentra disponible una versi&oacute;n m&aacute;s reciente del plugin de Todo Pago, puede consultarla desde 
+				<a href="https://github.com/TodoPago/Plugin-OsCommerce" target="_blank">aqu&iacute;</a>
+			 </p>
+                    </div>
+                </td>
                 <td align="right"></td>
                 <td class="smallText" align="right"></td>
                 </tr>
@@ -89,7 +146,9 @@ $autorization = json_decode($row['authorization']);
         </td>
     </tr>
     <tr>
-        <td><?php echo $mensaje;?></td>
+        <td><?php
+echo $mensaje;
+?></td>
     </tr>
     <tr>
         <td>
@@ -125,7 +184,7 @@ $autorization = json_decode($row['authorization']);
                             $.post( "todopago_credentials.php",
                                     { mail: $("#mail").val(),
                                       pass: $("#pass").val(),
-				      amb:  $("#amb").val()
+                      amb:  $("#amb").val()
                                     }, function(data){
                                         var obj = jQuery.parseJSON( data );
                                         if (obj.error_message != '0'){
@@ -151,144 +210,206 @@ $autorization = json_decode($row['authorization']);
                     <form id="form" action="" method="post">
                         <div class="input-todopago">
                             <label>Authorization HTTP (c&oacute;digo de autorizacion)</label>
-                            <input type="text" value='<?php echo  (isset($autorization->Authorization)? $autorization->Authorization:"")?>' placeholder="Authorization HTTP" name="authorization"/>
+                            <input type="text" value='<?php
+echo (isset($autorization->Authorization) ? $autorization->Authorization : "");
+?>' placeholder="Authorization HTTP" name="authorization"/>
                         </div>
                         <?php
-                        $segmento = (isset($row["segmento"])?$row["segmento"]:"");
-                        ?>
-                        <div class="input-todopago">
+$segmento = (isset($row["segmento"]) ? $row["segmento"] : "");
+?>
+                       <div class="input-todopago">
                             <label>Segmento del Comercio</label>
                             <select name="segmento">
                                 <option value="">Seleccione</option>
-                                <option value="retail" <?php echo ($segmento=="retail"?"selected":"")?>>Retail</option>
-                                <!--<option value="ticketing" <?php echo ($segmento=="ticketing"?"selected":"")?>>Ticketing</option>
-                                <option value="services" <?php echo ($segmento=="services"?"selected":"")?>>Services</option>
-                                <option value="digital" <?php echo ($segmento=="digital"?"selected":"")?>>Digital Goods</option>-->
+                                <option value="retail" <?php
+echo ($segmento == "retail" ? "selected" : "");
+?>>Retail</option>
+                                <!--<option value="ticketing" <?php
+echo ($segmento == "ticketing" ? "selected" : "");
+?>>Ticketing</option>
+                                <option value="services" <?php
+echo ($segmento == "services" ? "selected" : "");
+?>>Services</option>
+                                <option value="digital" <?php
+echo ($segmento == "digital" ? "selected" : "");
+?>>Digital Goods</option>-->
                             </select>
                         </div>
                         <?php
-                        $canal = (isset($row["canal"])?$row["canal"]:"");
-                        ?>
+$canal = (isset($row["canal"]) ? $row["canal"] : "");
+?>
 
                         <!--<div class="input-todopago">
                          <label>Canal de Ingreso del Pedido</label>
                         <select name="canal">
                         <option value="">Seleccione</option>
-                        <option value="web" <?php echo ($canal=="web"?"selected":"")?>>Web</option>
-                        <option value="mobile" <?php echo ($canal=="mobile"?"selected":"")?>>Mobile</option>
-                        <option value="telefonica" <?php echo ($canal=="telefonica"?"selected":"")?>>Telefonica</option>
+                        <option value="web" <?php
+echo ($canal == "web" ? "selected" : "");
+?>>Web</option>
+                        <option value="mobile" <?php
+echo ($canal == "mobile" ? "selected" : "");
+?>>Mobile</option>
+                        <option value="telefonica" <?php
+echo ($canal == "telefonica" ? "selected" : "");
+?>>Telefonica</option>
                         </select>
                         </div>-->
                         <?php
-                        $ambiente = (isset($row["ambiente"])?$row["ambiente"]:"");
-                        ?>
-                        <div class="input-todopago">
+$ambiente = (isset($row["ambiente"]) ? $row["ambiente"] : "");
+?>
+                       <div class="input-todopago">
                             <label>Modo Desarrollo o Producci&oacute;n</label>
                             <select name="ambiente" id="amb">
                             <option value="">Seleccione</option>
-                            <option value="test" <?php echo ($ambiente=="test"?"selected":"")?>>Desarrollo</option>
-                            <option value="production" <?php echo ($ambiente=="production"?"selected":"")?>>Producci&oacute;n</option>
+                            <option value="test" <?php
+echo ($ambiente == "test" ? "selected" : "");
+?>>Desarrollo</option>
+                            <option value="production" <?php
+echo ($ambiente == "production" ? "selected" : "");
+?>>Producci&oacute;n</option>
                             </select>
                         </div>
                         <div class="input-todopago">
                             <label>Dead Line</label>
-                            <input type="text" value="<?php echo  (isset($row["deadline"])?$row["deadline"]:"")?>" placeholder="Dead Line" name="deadline"/>
+                            <input type="text" value="<?php
+echo (isset($row["deadline"]) ? $row["deadline"] : "");
+?>" placeholder="Dead Line" name="deadline"/>
                         </div>
 
                         <div class="subtitulo-todopago">AMBIENTE DESARROLLO</div>
                         <div class="input-todopago">
                             <label>ID Site Todo Pago (Merchant ID)</label>
-                            <input type="text" value="<?php echo  (isset($row["test_merchant"])?$row["test_merchant"]:"")?>" placeholder="ID Site Todo Pago" name="test_merchant"/>
+                            <input type="text" value="<?php
+echo (isset($row["test_merchant"]) ? $row["test_merchant"] : "");
+?>" placeholder="ID Site Todo Pago" name="test_merchant"/>
                         </div>
                         <div class="input-todopago">
                             <label>Security Code (Key sin PRISMA/TOD.. ni espacio)</label>
-                            <input type="text" value="<?php echo  (isset($row["test_security"])?$row["test_security"]:"")?>" placeholder="Security Code" name="test_security"/>
+                            <input type="text" value="<?php
+echo (isset($row["test_security"]) ? $row["test_security"] : "");
+?>" placeholder="Security Code" name="test_security"/>
                         </div>
 
                         <div class="subtitulo-todopago">AMBIENTE PRODUCCION</div>
                         <div class="input-todopago">
                             <label>ID Site Todo Pago (Merchant ID)</label>
-                            <input type="text" value="<?php echo  (isset($row["production_merchant"])?$row["production_merchant"]:"")?>" placeholder="ID Site Todo Pago" name="production_merchant"/>
+                            <input type="text" value="<?php
+echo (isset($row["production_merchant"]) ? $row["production_merchant"] : "");
+?>" placeholder="ID Site Todo Pago" name="production_merchant"/>
                         </div>
                         <div class="input-todopago">
                             <label>Security Code (Key sin PRISMA/TOD.. ni espacio)</label>
-                            <input type="text" value="<?php echo  (isset($row["production_security"])?$row["production_security"]:"")?>" placeholder="Security Code" name="production_security"/>
+                            <input type="text" value="<?php
+echo (isset($row["production_security"]) ? $row["production_security"] : "");
+?>" placeholder="Security Code" name="production_security"/>
                         </div>
 
                         <div class="subtitulo-todopago">ESTADOS DE LA ORDEN</div>
                         <div class="input-todopago">
                             <?php
-                            $sql = "select  orders_status_id,orders_status_name from ".TABLE_ORDERS_STATUS. " where language_id = 1";
-                            $res = tep_db_query($sql);
-                            while ($row1 = tep_db_fetch_array($res)){
-                                $opciones[$row1["orders_status_id"]] = $row1["orders_status_name"];
-                            }
-                            ?>
-                            <label>Estado cuando la transaccion ha sido iniciada</label>
+$sql = "select  orders_status_id,orders_status_name from " . TABLE_ORDERS_STATUS . " where language_id = 1";
+$res = tep_db_query($sql);
+while ($row1 = tep_db_fetch_array($res)) {
+    $opciones[$row1["orders_status_id"]] = $row1["orders_status_name"];
+}
+?>
+                           <label>Estado cuando la transaccion ha sido iniciada</label>
                             <select name="estado_inicio">
                                 <?php
-                                foreach($opciones as $key=>$value){
-                                    $selected = "";
-                                    if ($key == $row["estado_inicio"]) $selected ="selected"
-                                ?>
-                                    <option <?php echo $selected?> value="<?php echo $key?>"><?php echo $value?></option>
+foreach ($opciones as $key => $value) {
+    $selected = "";
+    if ($key == $row["estado_inicio"])
+        $selected = "selected";
+?>
+                                   <option <?php
+    echo $selected;
+?> value="<?php
+    echo $key;
+?>"><?php
+    echo $value;
+?></option>
                                 <?php
-                                }
-                                ?>
-                            </select>
+}
+?>
+                           </select>
                         </div>
 
                         <div class="input-todopago">
                             <label>Estado cuando la transaccion ha sido aprobada</label>
                             <select name="estado_aprobada">
                                 <?php
-                                foreach($opciones as $key=>$value){
-                                     $selected = "";
-                                    if ($key == $row["estado_aprobada"]) $selected ="selected"
-                                ?>
-                                    <option <?php echo $selected?> value="<?php echo $key?>"><?php echo $value?></option>
+foreach ($opciones as $key => $value) {
+    $selected = "";
+    if ($key == $row["estado_aprobada"])
+        $selected = "selected";
+?>
+                                   <option <?php
+    echo $selected;
+?> value="<?php
+    echo $key;
+?>"><?php
+    echo $value;
+?></option>
                                 <?php
-                                }
-                                ?>
-                            </select>
+}
+?>
+                           </select>
                         </div>
 
                         <div class="input-todopago">
                             <label>Estado cuando la transaccion ha sido rechazada</label>
                             <select name="estado_rechazada">
                                 <?php
-                                foreach($opciones as $key=>$value){
-                                     $selected = "";
-                                    if ($key == $row["estado_rechazada"]) $selected ="selected"
-                                ?>
-                                    <option <?php echo $selected?> value="<?php echo $key?>"><?php echo $value?></option>
+foreach ($opciones as $key => $value) {
+    $selected = "";
+    if ($key == $row["estado_rechazada"])
+        $selected = "selected";
+?>
+                                   <option <?php
+    echo $selected;
+?> value="<?php
+    echo $key;
+?>"><?php
+    echo $value;
+?></option>
                                 <?php
-                                }
-                                ?>
-                            </select>
+}
+?>
+                           </select>
                         </div>
 
                         <div class="input-todopago">
                             <label>Estado cuando la transaccion ha sido offline</label>
                             <select name="estado_offline">
                                 <?php
-                                foreach($opciones as $key=>$value){
-                                     $selected = "";
-                                    if ($key == $row["estado_offline"]) $selected ="selected"
-                                ?>
-                                    <option <?php echo $selected?> value="<?php echo $key?>"><?php echo $value?></option>
+foreach ($opciones as $key => $value) {
+    $selected = "";
+    if ($key == $row["estado_offline"])
+        $selected = "selected";
+?>
+                                   <option <?php
+    echo $selected;
+?> value="<?php
+    echo $key;
+?>"><?php
+    echo $value;
+?></option>
                                 <?php
-                                }
-                                ?>
-                            </select>
+}
+?>
+                           </select>
                         </div>
 
                         <div class="subtitulo-todopago">FORMULARIO DE PAGO</div>
                         <div class="input-todopago">
                             <label style="float:left;">Seleccion el tipo de formulario de pago</label>
                             <div style="float:left;">
-                                <div style="margin-bottom:8px;"><input type="radio" name="tipo_formulario" value="0" <?php echo ($row['tipo_formulario'] == 0)?'checked="checked"' :'' ?> >Formulario externo<br></div>
-                                <div><input type="radio" name="tipo_formulario" value="1" <?php echo ($row['tipo_formulario'] == 1)?'checked="checked"' :'' ?> >Formulario integrado al e-commerce</div>
+                                <div style="margin-bottom:8px;"><input type="radio" name="tipo_formulario" value="0" <?php
+echo ($row['tipo_formulario'] == 0) ? 'checked="checked"' : '';
+?> >Formulario externo<br></div>
+                                <div><input type="radio" name="tipo_formulario" value="1" <?php
+echo ($row['tipo_formulario'] == 1) ? 'checked="checked"' : '';
+?> >Formulario integrado al e-commerce</div>
                             </div>
                             <div style="clear:both;"></div>
                         </div>
@@ -300,15 +421,22 @@ $autorization = json_decode($row['authorization']);
                             <div style="float:left;">
                                 <select name="maxinstallments">
                                     <?php
-                                    for( $i=1 ; $i <= 12 ; $i++){
-                                         $selected = "";
-                                        if ($i == $row["maxinstallments"]) $selected ="selected"
-                                        ?>
-                                        <option <?php echo $selected?> value="<?php echo $i?>"><?php echo $i ?></option>
+for ($i = 1; $i <= 12; $i++) {
+    $selected = "";
+    if ($i == $row["maxinstallments"])
+        $selected = "selected";
+?>
+                                       <option <?php
+    echo $selected;
+?> value="<?php
+    echo $i;
+?>"><?php
+    echo $i;
+?></option>
                                         <?php
-                                    } // ENDFOR
-                                    ?>
-                                </select>
+} // ENDFOR
+?>
+                               </select>
                             </div>
                             <div style="clear:both;"></div>
                         </div>
@@ -316,30 +444,46 @@ $autorization = json_decode($row['authorization']);
                             <label style="float:left;">Habilitar cantidad máxima de cuotas</label>
                             <div style="float:left;">
                                 <div style="margin-bottom:8px;">
-                                    <input type="checkbox" name="maxinstallments_enabled" <?php echo ($row['maxinstallments_enabled'] == 1)?' checked="checked"' :'' ?> >Habilitar<br>
+                                    <input type="checkbox" name="maxinstallments_enabled" <?php
+echo ($row['maxinstallments_enabled'] == 1) ? ' checked="checked"' : '';
+?> >Habilitar<br>
                                 </div>
                             </div>
                             <div style="clear:both;"></div>
                         </div>
                         <div class="input-todopago">
                             <label>Timeout</label>
-                            <input type="number" value="<?php echo  (isset($row["todopago_timeout"])?$row["todopago_timeout"]:"")?>" placeholder="" name="todopago_timeout"/>
+                            <input type="number" value="<?php
+echo (isset($row["todopago_timeout"]) ? $row["todopago_timeout"] : "");
+?>" placeholder="" name="todopago_timeout"/>
                         </div>
                         <div class="input-todopago">
                             <label style="float:left;">Activar timeout</label>
                             <div style="float:left;">
                                 <div style="margin-bottom:8px;">
-                                    <input type="checkbox" name="timeout_enabled" <?php echo ($row['timeout_enabled'] == 1)?' checked="checked"' :'' ?> >Habilitar<br>
+                                    <input type="checkbox" name="timeout_enabled" <?php
+echo ($row['timeout_enabled'] == 1) ? ' checked="checked"' : '';
+?> >Habilitar<br>
                                 </div>
                             </div>
                             <div style="clear:both;"></div>
                         </div>
                         <div class="input-todopago">
-                            <label style="float:left;">Vaciar carrito</label>
+                            <label style="float:left;">Activar gmaps</label>
+                            <div style="float:left;">
+                                <div style="margin-bottom:8px;">
+                                    <input type="checkbox" name="gmaps_enabled" <?php
+echo ($row['gmaps_enabled'] == 1) ? ' checked="checked"' : '';
+?> >Habilitar<br>
+                                </div>
+                            </div>
+                            <div style="clear:both;"></div>
+                        </div>
+                        <div class="input-todopago">
+                            <label style="float:left;">¿Desea vaciar el carrito en caso de que falle la compra?</label>
                             <div style="float:left;">
                                 <div style="margin-bottom:8px;">
                                     <input type="checkbox" name="emptycart_enabled" <?php echo ($row['emptycart_enabled'] == 1)?' checked="checked"' :'' ?> >Habilitar<br>
-<p>Si esta habilitado, ante un pago fallido se vaciará el carrito de compras.</p>
                                 </div>
                             </div>
                             <div style="clear:both;"></div>
@@ -365,31 +509,36 @@ $autorization = json_decode($row['authorization']);
                             </thead>
                             <tbody>
                                 <?php
-                                $sql = "select p.products_id,pd.products_name,p.products_model from ". TABLE_PRODUCTS. " as p inner join ".TABLE_PRODUCTS_DESCRIPTION." as pd on p.products_id = pd.products_id where language_id=1";
-                                $res = tep_db_query($sql);
-                                // echo $sql;
-                                $i =0;
-                                while ($row = tep_db_fetch_array($res)){
-                                    $sql = "select * from todo_pago_atributos where product_id=".$row["products_id"];
-                                    $res2 = tep_db_query($sql);
-                                    $tipoDelivery = "";
-                                    $tipoEnvio = "";
-                                    $tipoServicio = "";
-                                    $codigoProducto = "";
-                                    $diasEvento = "";
-                                    if ($row2 = tep_db_fetch_array($res2)){
-                                        if ($row2["CSITPRODUCTCODE"] != "") $codigoProducto = $row2["CSITPRODUCTCODE"];
-                                        if ($row2["CSMDD33"] != "") $diasEvento = $row2["CSMDD33"];
-                                        if ($row2["CSMDD34"] != "") $tipoEnvio = $row2["CSMDD34"];
-                                        if ($row2["CSMDD28"] != "") $tipoServicio = $row2["CSMDD28"];
-                                        if ($row2["CSMDD31"] != "") $tipoDelivery = $row2["CSMDD31"];
-                                    }
-                                    $i=$row["products_id"];
-                                    echo "<tr><td>".$row["products_id"]."</td><td id='nombre".$i."'>".$row["products_name"]."</td><td id='codigo".$i."'>".$codigoProducto."</td><td id='evento".$i."'>".$diasEvento."</td><td id='envio".$i."'>".$tipoEnvio."</td><td id='servicio".$i."'>".$tipoServicio."</td><td id='delivery".$i."'>".$tipoDelivery."</td><td class='editar' id='".$i."'>Editar</td></tr>";
-                                }
+$sql = "select p.products_id,pd.products_name,p.products_model from " . TABLE_PRODUCTS . " as p inner join " . TABLE_PRODUCTS_DESCRIPTION . " as pd on p.products_id = pd.products_id where language_id=1";
+$res = tep_db_query($sql);
+// echo $sql;
+$i   = 0;
+while ($row = tep_db_fetch_array($res)) {
+    $sql            = "select * from todo_pago_atributos where product_id=" . $row["products_id"];
+    $res2           = tep_db_query($sql);
+    $tipoDelivery   = "";
+    $tipoEnvio      = "";
+    $tipoServicio   = "";
+    $codigoProducto = "";
+    $diasEvento     = "";
+    if ($row2 = tep_db_fetch_array($res2)) {
+        if ($row2["CSITPRODUCTCODE"] != "")
+            $codigoProducto = $row2["CSITPRODUCTCODE"];
+        if ($row2["CSMDD33"] != "")
+            $diasEvento = $row2["CSMDD33"];
+        if ($row2["CSMDD34"] != "")
+            $tipoEnvio = $row2["CSMDD34"];
+        if ($row2["CSMDD28"] != "")
+            $tipoServicio = $row2["CSMDD28"];
+        if ($row2["CSMDD31"] != "")
+            $tipoDelivery = $row2["CSMDD31"];
+    }
+    $i = $row["products_id"];
+    echo "<tr><td>" . $row["products_id"] . "</td><td id='nombre" . $i . "'>" . $row["products_name"] . "</td><td id='codigo" . $i . "'>" . $codigoProducto . "</td><td id='evento" . $i . "'>" . $diasEvento . "</td><td id='envio" . $i . "'>" . $tipoEnvio . "</td><td id='servicio" . $i . "'>" . $tipoServicio . "</td><td id='delivery" . $i . "'>" . $tipoDelivery . "</td><td class='editar' id='" . $i . "'>Editar</td></tr>";
+}
 
-                                ?>
-                            </tbody>
+?>
+                           </tbody>
                         </table>
                         <div id="config-producto-todopago">
                             <div class="close-todopago">x</div>
@@ -419,8 +568,10 @@ $autorization = json_decode($row['authorization']);
                                                     </select>
                                                 </td>
                                             </tr>
-                                            <?php if($segmento=="ticketing"){ ?>
-                                            <tr>
+                                            <?php
+if ($segmento == "ticketing") {
+?>
+                                           <tr>
                                                 <td>Dias para el Evento</td>
                                                 <td>
                                                     <input id="dias_evento" type="text" value="" />
@@ -438,9 +589,13 @@ $autorization = json_decode($row['authorization']);
                                                     </select>
                                                 </td>
                                             </tr>
-                                            <?php } ?>
-                                            <?php if($segmento=="services"){ ?>
-                                            <tr>
+                                            <?php
+}
+?>
+                                           <?php
+if ($segmento == "services") {
+?>
+                                           <tr>
                                                 <td>Tipo de Delivery</td>
                                                 <td>
                                                     <select id="delivery_producto">
@@ -466,8 +621,10 @@ $autorization = json_decode($row['authorization']);
                                                     </select>
                                                 </td>
                                             </tr>
-                                            <?php } ?>
-                                            <tr>
+                                            <?php
+}
+?>
+                                           <tr>
                                                 <td colspan="2">
                                                     <input type="hidden" value="" id="id_producto" />
                                                     <input id="guardar" type="button" value="Guardar" />
@@ -546,18 +703,18 @@ $autorization = json_decode($row['authorization']);
                         </thead>
                         <tbody>
                             <?php
-                            $sql = "select orders_id,customers_name,customers_telephone,customers_email_address,date_purchased,orders_status_name from ". TABLE_ORDERS. " as o inner join ". TABLE_ORDERS_STATUS. " as os on os.orders_status_id = o.orders_status order by date_purchased desc";
-                            //echo $sql;
-                            $res = tep_db_query($sql);
-                            // echo $sql;
-                            $i =0;
-                            while ($row = tep_db_fetch_array($res)){
+$sql = "select orders_id,customers_name,customers_telephone,customers_email_address,date_purchased,orders_status_name from " . TABLE_ORDERS . " as o inner join " . TABLE_ORDERS_STATUS . " as os on os.orders_status_id = o.orders_status order by date_purchased desc";
+//echo $sql;
+$res = tep_db_query($sql);
+// echo $sql;
+$i   = 0;
+while ($row = tep_db_fetch_array($res)) {
 
-                             echo "<tr><td>".$row["orders_id"]."</td><td>".$row["customers_name"]."</td><td>".$row["customers_telephone"]."</td><td>".$row["customers_email_address"]."</td><td>".$row["date_purchased"]."</td><td>".$row["orders_status_name"]."</td><td class='refund-td' data-order_id='".$row["orders_id"]."' style='cursor:pointer'>Devolver</td><td class='status' id='".$row["orders_id"]."' style='cursor:pointer'>Ver Status</td></tr>";
-                            }
+    echo "<tr><td>" . $row["orders_id"] . "</td><td>" . $row["customers_name"] . "</td><td>" . $row["customers_telephone"] . "</td><td>" . $row["customers_email_address"] . "</td><td>" . $row["date_purchased"] . "</td><td>" . $row["orders_status_name"] . "</td><td class='refund-td' data-order_id='" . $row["orders_id"] . "' style='cursor:pointer'>Devolver</td><td class='status' id='" . $row["orders_id"] . "' style='cursor:pointer'>Ver Status</td></tr>";
+}
 
-                            ?>
-                        </tbody>
+?>
+                       </tbody>
                     </table>
                     <div id="status-orders" class="order-action-popup">
                         <div class="close-status-todopago close-todopago">x</div>
@@ -576,9 +733,6 @@ $autorization = json_decode($row['authorization']);
                             <p id="amount-div" hidden="hidden">
                                 <label for="amount-input">Monto: $</label>
                                 <input type="number" id="amount-input" name="amount" min=0.01 step=0.01 />
-                                <br/>
-                                <br/>
-                                <i>    * El monto de devolución se calcula en base al costo original del producto sin los impuestos agregados.</i>
                                 <span id="invalid-amount-message" style="color: red;"><br />Ingrese un monto</span>
                             </p>
                             <p style="text-align: right;">
@@ -607,7 +761,7 @@ $autorization = json_decode($row['authorization']);
                     $(".close-refund-todopago").click(function() {
                         $('#refund-dialog').hide();
                         $('#refund-result').hide();
-                    });
+                    })
                     $("#orders-table").on("click", ".refund-td", function refundTd_click() {
                         $('.order-action-popup').hide();
                         $('#order-id-hidden').val($(this).attr("data-order_id"));
@@ -658,13 +812,13 @@ $("#refund-type-select").change(function refundTypeSelect_change() {
                         }
                     });
                 });
+
+		    
                 $(".close-todopago").click(function(){
-<<<<<<< HEAD
-=======
-                  alert("sdfdsefd");
->>>>>>> origin/feature-partial-maxAmount
                   $("#refund-form").hide();
-                })
+                });
+		    
+		    
                 $('#orders-table').dataTable({
                 bFilter: true,
                 bInfo: true,
@@ -697,7 +851,7 @@ $("#refund-type-select").change(function refundTypeSelect_change() {
 </script>
 </body>
 <?php
-  require(DIR_WS_INCLUDES . 'application_bottom.php');
+require(DIR_WS_INCLUDES . 'application_bottom.php');
 ?>
 <script>
 jQuery(document).ready(function() {

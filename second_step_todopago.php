@@ -179,15 +179,16 @@ function take_action($data, $order_id) {
   require(DIR_WS_INCLUDES . 'template_bottom.php');
   require(DIR_WS_INCLUDES . 'application_bottom.php');
 
-    }
-        else{
-
-if($todoPagoConfig['emptycart_enabled'] == 1) {
-	$cart->reset(true);
-}
+    }else{
+          if($todoPagoConfig['emptycart_enabled'] == 1) {
+          	$cart->reset(true);
+            tep_redirect(tep_href_link('todopago_msg_error.php?msg='.$data['rta']['StatusMessage']));
+          }else{
             tep_redirect(tep_href_link('checkout_shipping_retry.php?msg='.$data['rta']['StatusMessage']));
-        }
+          }
+    }
 }
+
 
 _unregisterSessionVars(); //Necesario para el framework
 second_step_todopago();
