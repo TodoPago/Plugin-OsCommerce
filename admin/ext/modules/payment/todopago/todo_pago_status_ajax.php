@@ -7,6 +7,7 @@
 
     $orderId = $_REQUEST["order_id"];
 
+
     $sql = "select * from todo_pago_configuracion";
 
     $res = tep_db_query($sql);
@@ -22,6 +23,7 @@
         $wsdl = json_decode($row[$modo."wsdl"],1);
         
         $http_header = json_decode($row["authorization"],1);
+
         
         $http_header["user_agent"] = 'PHPSoapClient';
         
@@ -34,55 +36,35 @@
         $logger->info("params getStatus: ".json_encode($optionsGS));
 
         $status = $connector->getStatus($optionsGS);
-    
-        $rta = '';
-        $refunds = $status['Operations']['REFUNDS'];
 
-        $auxArray = array(
-             "REFUND" => $refunds
-             );
-
-        if($refunds != null){  
-            $aux = 'REFUND'; 
-            $auxColection = 'REFUNDS'; 
-        }else{ 
-            $aux = 'refound';
-            $auxColection = 'refounds'; 
-        }
-
-        if (isset($status['Operations']) && is_array($status['Operations']) ) {
-            foreach ($status['Operations'] as $key => $value) {
-
-                 if(is_array($value) && $key == $auxColection){
-
-                    $rta .= " $key: \n";
-                    foreach ($auxArray[$aux] as $key2 => $value2) {
-                        $rta .= "  $aux: \n";
-                        if(is_array($value2)){
-                            foreach ($value2 as $key3 => $value3) {
-                                if(is_array($value3)){
-                                    foreach ($value3 as $key4 => $value4) {
-                                        $rta .= "   - $key4: $value4 </br>";
-                                    }
-                                 } else {
-				        $rta .= "   - $key3: $value3 </br>";
-				 }
-                            }
-                        } else {
-				$rta .= "$key2: $value2 </br>";
-			}
-                    }
-                 }else{
-                     if(is_array($value)){
-                         $rta .= "$key: </br>";
-                     }else{
-                         $rta .= "$key: $value </br>";
-                     }
-                 } 
+        if ($status) {
+            if (isset($status['Operations']) && is_array($status['Operations'])) {
+                $rta = printGetStatus($status['Operations'], 0);
+            } else {
+                $rta = 'No hay operaciones para esta orden.';
             }
-        }else{ $rta = 'No hay operaciones para esta orden.'; }  
-
-        echo($rta);
-    
+        } else {
+            $rta = 'No se ecuentra la operación. Esto puede deberse a que la operación no se haya finalizado o a una configuración erronea.';
+        }
     }
+
+    echo $rta;
+
+
+    function printGetStatus($array, $indent) {
+        $rta = '';
+
+        foreach ($array as $key => $value) {
+            if ($key !== 'nil' && $key !== "@attributes") {
+                if (is_array($value) ){
+                    $rta .= str_repeat("-", $indent) . "$key: <br/>";
+                    $rta .= printGetStatus($value, $indent + 2);
+                } else {
+                    $rta .= str_repeat("-", $indent) . "$key: $value <br/>";
+                }
+            }
+        }
+        return $rta;
+    }
+
 ?>

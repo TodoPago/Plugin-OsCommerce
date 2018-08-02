@@ -90,7 +90,7 @@ if (isset($_GET['id'])) {
 </div>
 
 <div class="tp_wrapper" id="tpForm">
-    <section class="tp-total tp-flex">
+    <section class="tp-total tp-flex header_info">
         <div>
             <strong>Total a pagar $<?php echo $total_amount; ?></strong>
         </div>
@@ -111,8 +111,11 @@ if (isset($_GET['id'])) {
                     y evit&aacute; cargar los datos de tu tarjeta</p>
             </div>
             <div class="tp_col tp_span_1_of_2">
-                <button id="btn_Billetera" title="Pagar con Billetera" class="tp_btn tp_btn_sm">Pagar con Billetera
+                <button id="btn_billetera" value="Iniciar Sesión" title="Iniciar Sesión" class="tp_btn tp_btn_sm">Iniciar Sesión
                 </button>
+
+
+
             </div>
         </div>
     </section>
@@ -278,7 +281,7 @@ if (isset($_GET['id'])) {
 
         <div class="tp_row">
             <div class="tp_col tp_span_2_of_2">
-                <button id="btn_ConfirmarPago" class="tp_btn" title="Pagar" class="button" onclick="
+                <button id="btn_ConfirmarPago" class="tp_btn tp_btn_ancho" title="Pagar" class="button" onclick="
 inicializarMensajesError()"><span>Pagar</span></button>
             </div>
             <div class="tp_col tp_span_2_of_2">
@@ -425,10 +428,69 @@ inicializarMensajesError()"><span>Pagar</span></button>
             tpformJquery(".progress").hide('fast');
         }, 2000);
 
+
+/*
         setTimeout(function () {
             tpformJquery("#tpForm").fadeTo('fast', 1);
         }, 2200);
+*/
+
+
+        setTimeout(function () {
+            var frame_mode = "true";
+            console.log('setTimeout setTimeout setTimeout');
+            //Billetera, aprieba botón para abrir popup de billetera
+
+
+            
+            tpformJquery("#btn_billetera").html("Iniciar Sesión");
+
+
+ 
+
+
+            // $_SESSION["billetera"]=true;
+            <?php if(!empty($_SESSION["billetera"]) && ($_SESSION["billetera"] == true)){ ?>
+                var codeMethod = "tpbille";
+            <?php }else{  ?>
+                var codeMethod = "todopagotradicional";
+            <?php }
+             ?>
+            
+
+
+
+            if(codeMethod=="tpbille"){
+                if(frame_mode == "true"){
+                    getFormWAlletMode();
+                }else{
+                    getFormMode();
+                } 
+            }else{
+                tpformJquery("#tpForm").fadeTo('fast', 1);
+            }        
+        }, 2200);
+
+
     }
+
+
+
+
+        function getFormMode() {
+            console.log('getFormMode function');
+            tpformJquery("#tpForm").fadeTo('fast', 1);
+            tpformJquery(".header_info").fadeTo('fast', 1);
+        }
+        function getFormWAlletMode() {
+            console.log('getFormWAlletMode function');
+            tpformJquery("#tpForm").fadeTo('fast', 1);
+            tpformJquery(".header_info").fadeTo('fast', 1);
+            tpformJquery('#btn_billetera').click();
+            tpformJquery('.billetera_tp').hide();
+
+        }    
+
 
 
 
@@ -599,7 +661,7 @@ inicializarMensajesError()"><span>Pagar</span></button>
             callbackCustomSuccessFunction: 'customPaymentSuccessResponse',
             callbackCustomErrorFunction: 'customPaymentErrorResponse',
             botonPagarId: 'btn_ConfirmarPago',
-            botonPagarConBilleteraId: 'btn_Billetera',
+            botonPagarConBilleteraId: 'btn_billetera',
             modalCssClass: 'modal-class',
             modalContentCssClass: 'modal-content',
             beforeRequest: 'initLoading',

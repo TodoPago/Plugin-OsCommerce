@@ -125,7 +125,7 @@ $.ajax({
             <table border="0" width="100%" cellspacing="0" cellpadding="2" height="40">
                 <tr>
                 <td class="pageHeading">
-                    TodoPago (v. <?php echo TP_VERSION; ?>) | Configuraci&oacute;n 
+                    Todo Pago (v. <?php echo TP_VERSION; ?>) | Configuraci&oacute;n 
 
                     <div id="tp_configuracion_version_actualiza" style="display: none">
                         <p>
@@ -488,6 +488,74 @@ echo ($row['gmaps_enabled'] == 1) ? ' checked="checked"' : '';
                             </div>
                             <div style="clear:both;"></div>
                         </div>
+
+
+
+
+
+
+
+                        <div class="input-todopago">
+                            <label style="float:left;">Billetera en checkout<br />Seleccione el banner que desea mostrar para Billetera</label>
+                            <div style="float:left;">
+                                <div style="margin-bottom:8px;">
+                                    
+
+
+                                    <div style="height: 37px;">
+                                        <div style="padding-top: 9px; float: left; display: inline">
+                                            <input id="tp_billetera_banner_1" type="radio" name="bannerbilletera" value="1" 
+                                            <?php if($row['bannerbilletera']==1 OR empty($row['bannerbilletera'])) { 
+                                                echo 'checked';
+                                            } ?>
+                                            >
+                                        </div>
+
+                                        <div style="float: right; display: inline">
+                                                <img src="https://todopago.com.ar/sites/todopago.com.ar/files/billetera/pluginstarjeta1.jpg" alt="Banner 1" style="width: 250px">
+                                        </div>
+                                    </div>
+
+
+
+                                    <div style="height: 37px;">
+                                        <div style="padding-top: 12px; float: left; display: inline">
+                                            <input id="tp_billetera_banner_2" type="radio" name="bannerbilletera" value="2" 
+                                            <?php if($row['bannerbilletera']==2 OR empty($row['bannerbilletera'])) { 
+                                                echo 'checked';
+                                            } ?>
+                                            >
+                                        </div>
+
+                                        <div style="float: right; display: inline">
+                                                <img src="https://todopago.com.ar/sites/todopago.com.ar/files/billetera/pluginstarjeta2.jpg" alt="Banner 2" style="width: 250px">
+                                        </div>
+                                    </div>
+
+
+
+
+
+                                    <div style="height: 37px;">
+                                        <div style="padding-top: 12px; float: left; display: inline">
+                                            <input id="tp_billetera_banner_3" type="radio" name="bannerbilletera" value="3" 
+                                            <?php if($row['bannerbilletera']==3 OR empty($row['bannerbilletera'])) { 
+                                                echo 'checked';
+                                            } ?>
+                                            >
+                                        </div>
+
+                                        <div style="float: right; display: inline">
+                                                <img src="https://todopago.com.ar/sites/todopago.com.ar/files/billetera/pluginstarjeta3.jpg" alt="Banner 3" style="width: 250px">
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div style="clear:both;"></div>
+                        </div>
+                        <div style="clear:both;"></div>
+
                         <br><br>
                         <input  type="submit" name="submit" value="Guardar Datos"/>
                     </form>

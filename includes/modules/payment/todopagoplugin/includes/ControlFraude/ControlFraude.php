@@ -56,7 +56,7 @@ abstract class ControlFraude{
 		$this->logger->debug(" CSBTPHONENUMBER - Tel&eacute;fono del usuario al que se le emite la factura. No utilizar guiones, puntos o espacios. Incluir c&oacute;digo de pa&iacute;s");
 		$payDataOperacion ['CSBTPHONENUMBER'] = phone::clean($this->getField($this->order->customer['telephone']), $this->logger);
         
-		$this->logger->debug(" CSBTSTATE - Provincia de la direcci&oacute;n de facturaci&oacute;n (hay que cambiar esto!!! por datos hacepatdos por el gateway)");
+		$this->logger->debug(" CSBTSTATE - Provincia de la direcci&oacute;n de facturaci&oacute;n");
 		$payDataOperacion ['CSBTSTATE'] = $billingAdress['tp_state'];
                                                     
 		$this->logger->debug(" CSBTSTREET1 - Domicilio de facturaci&oacute;n (calle y nro)");

@@ -72,12 +72,88 @@ class todopagoplugin
     function selection()
     {
 
+        $sql           = "select * from todo_pago_configuracion";
+        $res           = tep_db_query($sql);
+        $row = tep_db_fetch_array($res);
+
+        $count_modules_payment_enables = 0;
+
+        if(empty($row['bannerbilletera'])){
+            $row['bannerbilletera']=1;
+        }
+
+        if (defined('MODULE_PAYMENT_INSTALLED') && tep_not_null(MODULE_PAYMENT_INSTALLED)) {
+           $modules_payment_installed = explode(';', MODULE_PAYMENT_INSTALLED);
+          } 
+
+        if (is_array($modules_payment_installed)) {
+           
+            while (list(, $value_pay) = each($modules_payment_installed)) {
+              $class_payment = substr($value_pay, 0, strrpos($value_pay, '.'));
+              if ($GLOBALS[$class_payment]->enabled) {
+                $count_modules_payment_enables++;
+              }
+            }
+          }
+        
+        $tp_html = '<img src="' . $this->logo . '" />
+                </strong>
+
+            </td>
+            <td align="right" id="idsin_billetera">
+                <input name="payment" value="todopagoplugin_sin_billetera" type="radio">
+            </td>
+        </tr>
+    </tbody>
+
+    <script type="text/javascript">
+    function seleccionar_billetera(valor){
+        console.log("Seleccionar billetera");
+        $("#bvtp").val(valor);
+        $("input[value=\'todopagoplugin\']").prop(\'checked\', valor);
+    }
+    $("#idsin_billetera").closest("tr").click(function(){
+        seleccionar_billetera(false);
+    });
+    </script>
+
+
+    <tbody>
+        <tr class="moduleRow" onmouseover="rowOverEffect(this)" onmouseout="rowOutEffect(this)" onclick="seleccionar_billetera(true)">
+            <td>
+                <strong>
+                    <img src="https://todopago.com.ar/sites/todopago.com.ar/files/billetera/pluginstarjeta'. $row['bannerbilletera'] .'.jpg">
+                    <br /><input type="hidden" id="bvtp" name="bvtp" value="true" >
+                    Billetera Virtual Todo Pago';
+    //solo todo pago
+    if($count_modules_payment_enables == 1){
+        $tp_html .= ' </td>
+                <td align="right">
+                    <input name="payment" value="todopagoplugin" type="radio">
+                </td>
+            </tr>
+            </tbody>';
+    }
+
+
+        //Con billetera
+        return array(
+            'id' => $this->code,
+            'module' => $tp_html,
+            'icon' => '<img src="' . DIR_WS_CATALOG . $this->logo . '" />'
+        );
+
+
+
+        /*
+        //Sin billetera
         return array(
             'id' => $this->code,
 
             'module' => '<img src="' . $this->logo . '" />',
             'icon' => '<img src="' . DIR_WS_CATALOG . $this->logo . '" />'
         );
+        */
 
     }
 
@@ -230,7 +306,7 @@ class todopagoplugin
 
         tep_db_query("CREATE TABLE IF NOT EXISTS `".TABLE_TP_ATRIBUTOS."` ( `product_id` BIGINT NOT NULL , `CSITPRODUCTCODE` VARCHAR(150) NOT NULL COMMENT 'Codigo del producto' , `CSMDD33` VARCHAR(150) NOT NULL COMMENT 'Dias para el evento' , `CSMDD34` VARCHAR(150) NOT NULL COMMENT 'Tipo de envio' , `CSMDD28` VARCHAR(150) NOT NULL COMMENT 'Tipo de servicio' , `CSMDD31` VARCHAR(150) NOT NULL COMMENT 'Tipo de delivery' ) ENGINE = MyISAM;");
 
-        tep_db_query("CREATE TABLE IF NOT EXISTS `".TABLE_TP_CONFIGURACION."` ( `idConf` INT NOT NULL PRIMARY KEY, `authorization` VARCHAR(100) NOT NULL , `segmento` VARCHAR(100) NOT NULL , `canal` VARCHAR(100) NOT NULL , `ambiente` VARCHAR(100) NOT NULL , `deadline` VARCHAR(100) NOT NULL , `test_endpoint` TEXT NOT NULL , `test_wsdl` TEXT NOT NULL , `test_merchant` VARCHAR(100) NOT NULL , `test_security` VARCHAR(100) NOT NULL , `production_endpoint` TEXT NOT NULL , `production_wsdl` TEXT NOT NULL , `production_merchant` VARCHAR(100) NOT NULL , `production_security` VARCHAR(100) NOT NULL , `estado_inicio` VARCHAR(100) NOT NULL , `estado_aprobada` VARCHAR(100) NOT NULL , `estado_rechazada` VARCHAR(100) NOT NULL , `tipo_formulario` TINYINT UNSIGNED DEFAULT 0,`estado_offline` VARCHAR(100) NOT NULL, `medios_pago` TEXT NOT NULL,`todopago_timeout` INT ,`timeout_enabled` TINYINT UNSIGNED DEFAULT 0 , `emptycart_enabled` TINYINT UNSIGNED DEFAULT 0 , `maxinstallments` INT UNSIGNED DEFAULT 12 , `maxinstallments_enabled` TINYINT UNSIGNED DEFAULT 0  ) ENGINE = MyISAM;");
+        tep_db_query("CREATE TABLE IF NOT EXISTS `".TABLE_TP_CONFIGURACION."` ( `idConf` INT NOT NULL PRIMARY KEY, `authorization` VARCHAR(100) NOT NULL , `segmento` VARCHAR(100) NOT NULL , `canal` VARCHAR(100) NOT NULL , `ambiente` VARCHAR(100) NOT NULL , `deadline` VARCHAR(100) NOT NULL , `test_endpoint` TEXT NOT NULL , `test_wsdl` TEXT NOT NULL , `test_merchant` VARCHAR(100) NOT NULL , `test_security` VARCHAR(100) NOT NULL , `production_endpoint` TEXT NOT NULL , `production_wsdl` TEXT NOT NULL , `production_merchant` VARCHAR(100) NOT NULL , `production_security` VARCHAR(100) NOT NULL , `estado_inicio` VARCHAR(100) NOT NULL , `estado_aprobada` VARCHAR(100) NOT NULL , `estado_rechazada` VARCHAR(100) NOT NULL , `tipo_formulario` TINYINT UNSIGNED DEFAULT 0,`estado_offline` VARCHAR(100) NOT NULL, `medios_pago` TEXT NOT NULL,`todopago_timeout` INT ,`timeout_enabled` TINYINT UNSIGNED DEFAULT 0 , `emptycart_enabled` TINYINT UNSIGNED DEFAULT 0 , `maxinstallments` INT UNSIGNED DEFAULT 12 , `maxinstallments_enabled` TINYINT UNSIGNED DEFAULT 0,  `bannerbilletera` TINYINT UNSIGNED DEFAULT 0 ) ENGINE = MyISAM;");
 
         $qry       = "SHOW COLUMNS FROM `" . TABLE_TP_CONFIGURACION . "` LIKE 'todopago_timeout'";
         $resFields = tep_db_query($qry);
@@ -671,10 +747,24 @@ class todopagoplugin
             $formType       = $todoPagoConfig['tipo_formulario'];
 
             //choose form payment type
-            if ($formType == 0) {
+            if ($formType == 0) { //Formulario externo
                 header('Location: ' . $rta['URL_Request']);
-            } elseif ($formType == 1) {
-                header('Location: ' . tep_href_link('todopago_form_pago.php', 'id=' . $insert_id, 'SSL'));
+            } elseif ($formType == 1) { //Formulario híbrido
+
+
+
+
+                ////////********************
+                ///////////******************
+                //PRINT_r($_SESSION);
+                //die;
+    
+                //Si eligió billetera, redirige a billetera
+                if(!empty($_SESSION['billetera'])){
+                    header('Location: ' . tep_href_link('todopago_form_pago_billetera.php', 'id=' . $insert_id, 'SSL'));
+                }else{
+                    header('Location: ' . tep_href_link('todopago_form_pago.php', 'id=' . $insert_id, 'SSL'));
+                }
             }
             die();
 

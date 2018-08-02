@@ -111,7 +111,7 @@
 .confirmacion{
         font-size: 10px !important;
         text-transform: uppercase !important;
-
+        text-align: center;
 }
 
 /*-------------------------------------*/
@@ -131,7 +131,7 @@
 }
 
 .tp_btn {
-    width: 75%;
+    /*width: 75%;*/
     padding: 7px 50px;
     font-weight: bold;
     border: 0;
@@ -142,6 +142,10 @@
     text-align: center;
     cursor: pointer;
     margin: 0 0 0 12%;
+}
+
+.tp_btn_ancho{
+    width: 75%;
 }
 
 .tp_btn:hover {
